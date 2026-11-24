@@ -117,15 +117,15 @@
 
             <!-- Quick Log & Consistency Heatmap Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Daily Quick Input Form -->
+                <!-- Daily Quick Input Form with Manual Hours Control -->
                 <div class="glass p-6 rounded-2xl border border-gray-800 lg:col-span-1 space-y-4">
                     <div class="flex justify-between items-center">
-                        <h2 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-accent"></i> Quick Logger</h2>
+                        <h2 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-accent"></i> Manual Hours & Quick Logger</h2>
                         <button onclick="resetTodayProgress()" class="text-[11px] bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-800/50 px-2.5 py-1 rounded-lg transition" title="Reset Today's Hours/Qs">
                             <i class="fa-solid fa-rotate-left"></i> Reset Today
                         </button>
                     </div>
-                    <p class="text-xs text-gray-400">Log today's study hours and practice count directly.</p>
+                    <p class="text-xs text-gray-400">Manually assign exact study hours and practice counts for any subject.</p>
                     <div class="space-y-3">
                         <div>
                             <label class="text-xs text-gray-400 block mb-1">Select Subject</label>
@@ -137,14 +137,14 @@
                             </select>
                         </div>
                         <div>
-                            <label class="text-xs text-gray-400 block mb-1">Study Hours Added</label>
-                            <input type="number" id="quickHours" step="0.5" min="0" inputmode="decimal" placeholder="e.g. 2.5" class="w-full bg-cardbg border border-gray-700 rounded-xl p-2.5 text-sm focus:outline-none focus:border-accent">
+                            <label class="text-xs text-gray-400 block mb-1">Total Study Hours (Manual Control)</label>
+                            <input type="number" id="quickHours" step="0.5" min="0" inputmode="decimal" placeholder="e.g. 4.5" class="w-full bg-cardbg border border-gray-700 rounded-xl p-2.5 text-sm focus:outline-none focus:border-accent">
                         </div>
                         <div>
-                            <label class="text-xs text-gray-400 block mb-1">Questions Solved</label>
+                            <label class="text-xs text-gray-400 block mb-1">Questions Solved Added</label>
                             <input type="number" id="quickQuestions" min="0" inputmode="numeric" placeholder="e.g. 35" class="w-full bg-cardbg border border-gray-700 rounded-xl p-2.5 text-sm focus:outline-none focus:border-accent">
                         </div>
-                        <button onclick="submitQuickLog()" class="w-full bg-accent hover:bg-accenthover py-2.5 rounded-xl text-sm font-semibold transition shadow-lg shadow-indigo-600/20">Record Progress</button>
+                        <button onclick="submitQuickLog()" class="w-full bg-accent hover:bg-accenthover py-2.5 rounded-xl text-sm font-semibold transition shadow-lg shadow-indigo-600/20">Update Subject Hours & Qs</button>
                     </div>
                 </div>
 
@@ -177,7 +177,7 @@
             <div class="flex justify-between items-center">
                 <div>
                     <h2 class="text-xl font-bold">PCM Subject & Question Breakdown</h2>
-                    <p class="text-xs text-gray-400">Track independent mastery: Independently, AI-Assisted, Partially Solved, Unsolved.</p>
+                    <p class="text-xs text-gray-400">Fully manual control over Independent, AI-Assisted, Partial, and Unsolved question columns.</p>
                 </div>
                 <button onclick="openAddTopicModal()" class="bg-accent hover:bg-accenthover text-sm px-4 py-2 rounded-xl font-semibold transition flex items-center gap-2">
                     <i class="fa-solid fa-plus"></i> Add Topic / Chapter
@@ -338,6 +338,41 @@
                 <div class="flex justify-end gap-3 mt-4">
                     <button type="button" onclick="closeModal('topicModal')" class="px-4 py-2 rounded-xl text-sm bg-gray-800 hover:bg-gray-700">Cancel</button>
                     <button type="submit" class="px-4 py-2 rounded-xl text-sm bg-accent hover:bg-accenthover font-semibold">Save Topic</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Manual Chapter Mastery Edit Modal -->
+    <div id="editTopicModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass bg-cardbg p-6 rounded-2xl border border-gray-800 w-full max-w-md space-y-4">
+            <h3 class="text-lg font-bold" id="editTopicTitle">Update Chapter Mastery</h3>
+            <p class="text-xs text-gray-400">Manually enter exact values for all question categories.</p>
+            <form onsubmit="saveEditTopic(event)" class="space-y-3">
+                <input type="hidden" id="editTopicId">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-emerald-400 block mb-1 font-medium">Independent Qs</label>
+                        <input type="number" id="editSolved" min="0" inputmode="numeric" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm" required>
+                    </div>
+                    <div>
+                        <label class="text-xs text-indigo-400 block mb-1 font-medium">AI-Assisted Qs</label>
+                        <input type="number" id="editAi" min="0" inputmode="numeric" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm" required>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-amber-400 block mb-1 font-medium">Partial Qs</label>
+                        <input type="number" id="editPartial" min="0" inputmode="numeric" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm" required>
+                    </div>
+                    <div>
+                        <label class="text-xs text-rose-400 block mb-1 font-medium">Unsolved Qs</label>
+                        <input type="number" id="editUnsolved" min="0" inputmode="numeric" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm" required>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 mt-4">
+                    <button type="button" onclick="closeModal('editTopicModal')" class="px-4 py-2 rounded-xl text-sm bg-gray-800 hover:bg-gray-700">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-sm bg-accent hover:bg-accenthover font-semibold">Save Changes</button>
                 </div>
             </form>
         </div>
@@ -566,7 +601,7 @@
                         </div>
                         <div class="flex justify-between items-center text-xs text-gray-400 pt-1">
                             <span>Target: ${topic.targetHrs} hrs | ${topic.targetQ} Qs</span>
-                            <button onclick="updateTopicQuestions(${topic.id})" class="bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 px-3 py-1 rounded-lg transition">+ Update Qs</button>
+                            <button onclick="openEditTopicModal(${topic.id})" class="bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 px-3 py-1 rounded-lg transition font-medium"><i class="fa-solid fa-pen mr-1"></i> Edit All 4 Columns</button>
                         </div>
                     </div>
                 `;
@@ -644,19 +679,24 @@
             container.innerHTML = html;
         }
 
-        // Quick Log Submit
+        // Quick Log & Manual Hours Submit
         function submitQuickLog() {
             let sub = document.getElementById('quickSubject').value;
-            let hrs = parseFloat(document.getElementById('quickHours').value) || 0;
+            let hrs = parseFloat(document.getElementById('quickHours').value);
             let qs = parseInt(document.getElementById('quickQuestions').value) || 0;
 
-            appData.studyHours[sub] = (appData.studyHours[sub] || 0) + hrs;
-            appData.questions[sub] = (appData.questions[sub] || 0) + qs;
+            // Manual hours assignment check
+            if (!isNaN(hrs)) {
+                appData.studyHours[sub] = hrs; // Sets exact manual hours
+            }
+            if (qs > 0) {
+                appData.questions[sub] = (appData.questions[sub] || 0) + qs;
+            }
 
             document.getElementById('quickHours').value = '';
             document.getElementById('quickQuestions').value = '';
             saveData();
-            alert(`✅ Progress successfully logged for ${sub}!`);
+            alert(`✅ Manual hours and questions successfully updated for ${sub}!`);
         }
 
         // Reset Today's Progress
@@ -675,6 +715,18 @@
 
         // Modals Control
         function openAddTopicModal() { document.getElementById('topicModal').classList.remove('hidden'); }
+        function openEditTopicModal(id) {
+            let t = appData.topics.find(x => x.id === id);
+            if (!t) return;
+            document.getElementById('editTopicId').value = t.id;
+            document.getElementById('editTopicTitle').innerText = `Edit Mastery: ${t.name}`;
+            document.getElementById('editSolved').value = t.solved;
+            document.getElementById('editAi').value = t.aiAssisted;
+            document.getElementById('editPartial').value = t.partial;
+            document.getElementById('editUnsolved').value = t.unsolved;
+            document.getElementById('editTopicModal').classList.remove('hidden');
+        }
+
         function openMistakeModal() { 
             let modal = document.getElementById('mistakeModal');
             modal.classList.remove('hidden');
@@ -703,16 +755,17 @@
             renderPcmChapters();
         }
 
-        function updateTopicQuestions(id) {
+        function saveEditTopic(e) {
+            e.preventDefault();
+            let id = parseInt(document.getElementById('editTopicId').value);
             let t = appData.topics.find(x => x.id === id);
-            if (!t) return;
-            let input = prompt(`Enter solved questions for ${t.name}:`, t.solved);
-            if (input !== null) {
-                let val = parseInt(input);
-                if (!isNaN(val)) {
-                    t.solved = val;
-                    saveData();
-                }
+            if (t) {
+                t.solved = parseInt(document.getElementById('editSolved').value) || 0;
+                t.aiAssisted = parseInt(document.getElementById('editAi').value) || 0;
+                t.partial = parseInt(document.getElementById('editPartial').value) || 0;
+                t.unsolved = parseInt(document.getElementById('editUnsolved').value) || 0;
+                saveData();
+                closeModal('editTopicModal');
             }
         }
 
