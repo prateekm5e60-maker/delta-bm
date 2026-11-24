@@ -452,9 +452,11 @@
             db.collection('users').doc(currentUser.uid).get().then(doc => {
                 if (doc.exists) {
                     appData = doc.data();
+                    localStorage.setItem('delta_bm_data', JSON.stringify(appData));
                     renderAll();
+                    console.log("Cloud data loaded successfully!");
                 }
-            });
+            }).catch(err => console.error("Cloud load error:", err));
         }
 
         function switchTab(tabId) {
@@ -655,7 +657,6 @@
                 return;
             }
             appData.vault.forEach(item => {
-                // Auto detect if content is a URL/Link and format it nicely with anchor tag target="_blank"
                 let formattedContent = item.content;
                 if (item.content.startsWith('http://') || item.content.startsWith('https://')) {
                     formattedContent = `<a href="${item.content}" target="_blank" class="text-indigo-400 underline break-all flex items-center gap-1.5"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open Link / PDF</a>`;
