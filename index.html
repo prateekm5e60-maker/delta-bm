@@ -774,6 +774,21 @@
             document.getElementById('authStatusBadge').classList.remove('bg-gray-800');
             document.getElementById('authStatusBadge').classList.add('bg-emerald-950', 'text-emerald-400');
             closeModal('authModal');
+            function simulateAuthLogin() {
+    let email = document.getElementById('authEmail').value;
+    if(!email) { alert("Please enter email"); return; }
+    
+    document.getElementById('authStatusText').innerText = `Synced (${email})`;
+    document.getElementById('authStatusBadge').classList.remove('bg-gray-800');
+    document.getElementById('authStatusBadge').classList.add('bg-emerald-950', 'text-emerald-400');
+    
+    closeModal('authModal');
+    
+    // Yeh line dashboard tab ko turant screen par show kar degi
+    switchTab('dashboard');
+    
+    alert("✨ Successfully logged into Delta Cloud! Data sync active.");
+}
             alert("✨ Successfully logged into Delta Cloud! Data sync active.");
         }
 
