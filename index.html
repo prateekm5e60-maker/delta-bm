@@ -244,13 +244,13 @@
                 <button onclick="calcAppend(')')" class="bg-gray-800 p-3 rounded-xl font-semibold">)</button>
                 <button onclick="calcAppend('/')" class="bg-indigo-900/40 p-3 rounded-xl font-semibold text-indigo-300">÷</button>
                 
-                <button onclick="calcAppend('sin(')" class="bg-gray-800 p-2.5 rounded-xl text-xs font-semibold">sin</button>
-                <button onclick="calcAppend('cos(')" class="bg-gray-800 p-2.5 rounded-xl text-xs font-semibold">cos</button>
-                <button onclick="calcAppend('tan(')" class="bg-gray-800 p-2.5 rounded-xl text-xs font-semibold">tan</button>
+                <button onclick="calcAppend('Math.sin(')" class="bg-gray-800 p-2.5 rounded-xl text-xs font-semibold">sin</button>
+                <button onclick="calcAppend('Math.cos(')" class="bg-gray-800 p-2.5 rounded-xl text-xs font-semibold">cos</button>
+                <button onclick="calcAppend('Math.tan(')" class="bg-gray-800 p-2.5 rounded-xl text-xs font-semibold">tan</button>
                 <button onclick="calcAppend('*')" class="bg-indigo-900/40 p-3 rounded-xl font-semibold text-indigo-300">×</button>
 
-                <button onclick="calcAppend('log(')" class="bg-gray-800 p-2.5 rounded-xl text-xs font-semibold">log</button>
-                <button onclick="calcAppend('sqrt(')" class="bg-gray-800 p-2.5 rounded-xl text-xs font-semibold">√</button>
+                <button onclick="calcAppend('Math.log10(')" class="bg-gray-800 p-2.5 rounded-xl text-xs font-semibold">log</button>
+                <button onclick="calcAppend('Math.sqrt(')" class="bg-gray-800 p-2.5 rounded-xl text-xs font-semibold">√</button>
                 <button onclick="calcAppend('**')" class="bg-gray-800 p-2.5 rounded-xl text-xs font-semibold">x^y</button>
                 <button onclick="calcAppend('-')" class="bg-indigo-900/40 p-3 rounded-xl font-semibold text-indigo-300">-</button>
 
@@ -266,16 +266,15 @@
                 <button onclick="calcAppend('1')" class="bg-gray-800/60 p-3 rounded-xl font-semibold">1</button>
                 <button onclick="calcAppend('2')" class="bg-gray-800/60 p-3 rounded-xl font-semibold">2</button>
                 <button onclick="calcAppend('3')" class="bg-gray-800/60 p-3 rounded-xl font-semibold">3</button>
-                <button onclick="calcCalculate()" class="bg-emerald-600 hover:bg-emerald-700 p-3 rounded-xl font-semibold text-white">⌕</button>
+                <button onclick="calcCalculate()" class="bg-emerald-600 hover:bg-emerald-700 p-3 rounded-xl font-semibold text-white row-span-2">=</button>
 
                 <button onclick="calcAppend('0')" class="bg-gray-800/60 p-3 rounded-xl font-semibold col-span-2">0</button>
                 <button onclick="calcAppend('.')" class="bg-gray-800/60 p-3 rounded-xl font-semibold">.</button>
-                <button onclick="calcCalculate()" class="bg-emerald-600 hover:bg-emerald-700 p-3 rounded-xl font-semibold text-white col-span-1">=</button>
             </div>
         </div>
     </div>
 
-    <!-- Edit Chapter Modal (Manual 4 Columns) -->
+    <!-- Edit Chapter Modal -->
     <div id="editTopicModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="glass bg-cardbg p-6 rounded-2xl border border-gray-800 w-full max-w-md space-y-4">
             <h3 class="text-lg font-bold">Manual 4-Column Control</h3>
@@ -316,7 +315,7 @@
     <!-- Vault Modal -->
     <div id="vaultModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="glass bg-cardbg p-6 rounded-2xl border border-gray-800 w-full max-w-md space-y-4">
-            <h3 class="text-lg font-bold">Add Short Notes or Formula</h3>
+            <h3 class="text-lg font-bold">Add Short Notes or Formula / Link</h3>
             <form onsubmit="saveVaultItem(event)" class="space-y-3">
                 <select id="vaultSubject" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm">
                     <option value="Physics">Physics</option>
@@ -324,7 +323,7 @@
                     <option value="Maths">Mathematics</option>
                 </select>
                 <input type="text" id="vaultTitle" placeholder="Topic Title" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm" required>
-                <textarea id="vaultContent" rows="4" placeholder="Formulas / PDF link..." class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm" required></textarea>
+                <textarea id="vaultContent" rows="4" placeholder="Formulas, short notes or paste PDF/Drive link here..." class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm" required></textarea>
                 <div class="flex justify-end gap-3 mt-4">
                     <button type="button" onclick="closeModal('vaultModal')" class="px-4 py-2 rounded-xl text-sm bg-gray-800">Cancel</button>
                     <button type="submit" class="px-4 py-2 rounded-xl text-sm bg-accent font-semibold">Save</button>
@@ -424,7 +423,8 @@
             timetable: []
         };
 
-        document.getElementById('logDate').valueAsDate = new Date();
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.getElementById('logDate').value = todayStr;
 
         auth.onAuthStateChanged(user => {
             currentUser = user;
@@ -440,36 +440,15 @@
             renderAll();
         });
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(el => {
-                el.classList.remove('bg-accent', 'text-white');
-                el.classList.add('text-gray-400');
-            });
-            document.getElementById('tab-' + tabId).classList.remove('hidden');
-            const btn = document.getElementById('nav-' + tabId);
-            if(btn) {
-                btn.classList.add('bg-accent', 'text-white');
-                btn.classList.remove('text-gray-400');
-            }
-            renderAll();
-        }
-
-        function switchPcmSub(sub) {
-            currentPcmSub = sub;
-            document.querySelectorAll('.pcm-sub-btn').forEach(b => b.classList.replace('bg-indigo-600', 'bg-transparent'));
-            document.getElementById('pcm-btn-' + sub).classList.replace('bg-transparent', 'bg-indigo-600');
-            renderPcmChapters();
-        }
-
         function saveData() {
             localStorage.setItem('delta_bm_data', JSON.stringify(appData));
             if (currentUser) {
-                db.collection('users').doc(currentUser.uid).set(appData).catch(err => console.log(err));
+                db.collection('users').doc(currentUser.uid).set(appData).catch(err => console.error("Cloud sync error:", err));
             }
         }
 
         function loadCloudData() {
+            if (!currentUser) return;
             db.collection('users').doc(currentUser.uid).get().then(doc => {
                 if (doc.exists) {
                     appData = doc.data();
@@ -478,20 +457,61 @@
             });
         }
 
-        function submitManualLog() {
-            const dateStr = document.getElementById('logDate').value;
-            const hrs = parseFloat(document.getElementById('quickHours').value) || 0;
-            const qs = parseInt(document.getElementById('quickQuestions').value) || 0;
-            const streakVal = parseInt(document.getElementById('manualStreakInput').value);
-
-            if(!appData.dailyLogs[dateStr]) {
-                appData.dailyLogs[dateStr] = { hours: 0, questions: 0 };
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-accent', 'text-white');
+                btn.classList.add('text-gray-400', 'hover:text-white', 'hover:bg-cardhover');
+            });
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('nav-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-gray-400', 'hover:text-white', 'hover:bg-cardhover');
+                activeBtn.classList.add('bg-accent', 'text-white');
             }
-            appData.dailyLogs[dateStr].hours = hrs;
-            appData.dailyLogs[dateStr].questions = qs;
+        }
 
-            if(!isNaN(streakVal)) {
-                appData.manualStreak = streakVal;
+        // Calculator Logic
+        function toggleCalculatorModal() {
+            const modal = document.getElementById('calculatorModal');
+            modal.classList.toggle('hidden');
+        }
+        function calcClear() {
+            document.getElementById('calcDisplay').value = '0';
+        }
+        function calcAppend(val) {
+            let display = document.getElementById('calcDisplay');
+            if (display.value === '0' || display.value === 'Error') {
+                display.value = val;
+            } else {
+                display.value += val;
+            }
+        }
+        function calcCalculate() {
+            let display = document.getElementById('calcDisplay');
+            try {
+                let res = eval(display.value);
+                display.value = res;
+            } catch (e) {
+                display.value = 'Error';
+            }
+        }
+
+        // Dashboard & Manual Logger
+        function submitManualLog() {
+            const date = document.getElementById('logDate').value;
+            const hours = parseFloat(document.getElementById('quickHours').value) || 0;
+            const questions = parseInt(document.getElementById('quickQuestions').value) || 0;
+            const streak = parseInt(document.getElementById('manualStreakInput').value);
+
+            if (!appData.dailyLogs[date]) {
+                appData.dailyLogs[date] = { hours: 0, questions: 0 };
+            }
+            appData.dailyLogs[date].hours += hours;
+            appData.dailyLogs[date].questions += questions;
+
+            if (!isNaN(streak)) {
+                appData.manualStreak = streak;
             }
 
             saveData();
@@ -499,20 +519,367 @@
             alert('Manual entry saved successfully!');
         }
 
-        function renderAll() {
+        function renderDashboard() {
             let totalHrs = 0;
-            let totalQs = 0;
-            for(let d in appData.dailyLogs) {
+            let totalQ = 0;
+            for (let d in appData.dailyLogs) {
                 totalHrs += appData.dailyLogs[d].hours || 0;
-                totalQs += appData.dailyLogs[d].questions || 0;
+                totalQ += appData.dailyLogs[d].questions || 0;
             }
             document.getElementById('dashTotalHours').innerHTML = totalHrs.toFixed(1) + ' <span class="text-xs text-gray-400 font-normal">Hrs</span>';
-            document.getElementById('dashTotalQ').innerText = totalQs;
-            document.getElementById('dashCompletion').innerText = Math.min(100, Math.round((totalQs / 1500) * 100)) + '%';
+            document.getElementById('dashTotalQ').innerText = totalQ;
+            document.getElementById('dashCompletion').innerText = Math.min(100, Math.round((totalQ / 1000) * 100)) + '%';
             document.getElementById('dashStreak').innerText = appData.manualStreak || 1;
-            document.getElementById('manualStreakInput').value = appData.manualStreak || 1;
 
-            renderHeatmap();
+            // Heatmap
+            let hm = document.getElementById('heatmapContainer');
+            hm.innerHTML = '';
+            for (let i = 29; i >= 0; i--) {
+                let d = new Date();
+                d.setDate(d.getDate() - i);
+                let dStr = d.toISOString().split('T')[0];
+                let log = appData.dailyLogs[dStr];
+                let bg = 'bg-gray-800';
+                if (log && log.questions > 50) bg = 'bg-indigo-400';
+                else if (log && log.questions > 20) bg = 'bg-indigo-600';
+                else if (log && log.questions > 0) bg = 'bg-indigo-950';
+
+                let cell = document.createElement('div');
+                cell.className = `heatmap-cell ${bg}`;
+                cell.title = `${dStr}: ${log ? log.questions : 0} Qs, ${log ? log.hours : 0} hrs`;
+                hm.appendChild(cell);
+            }
+        }
+
+        // PCM Chapters & 4 Columns
+        function switchPcmSub(sub) {
+            currentPcmSub = sub;
+            document.querySelectorAll('.pcm-sub-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white');
+                btn.classList.add('text-gray-400', 'hover:text-white');
+            });
+            document.getElementById('pcm-btn-' + sub).classList.add('bg-indigo-600', 'text-white');
+            document.getElementById('pcm-btn-' + sub).classList.remove('text-gray-400');
+            renderPcmChapters();
+        }
+
+        function renderPcmChapters() {
+            let container = document.getElementById('pcmChaptersContainer');
+            container.innerHTML = '';
+            let filtered = appData.topics.filter(t => t.subject === currentPcmSub);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 italic">No chapters added for ${currentPcmSub} yet.</p>`;
+                return;
+            }
+
+            filtered.forEach(ch => {
+                let card = document.createElement('div');
+                card.className = 'glass p-5 rounded-2xl border border-gray-800 space-y-3';
+                card.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-bold text-base">${ch.name}</h4>
+                        <button onclick="openEditChapterModal(${ch.id})" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded-xl text-indigo-400 font-medium">Edit Counts</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="bg-cardbg p-2 rounded-xl border border-gray-800"><span class="text-emerald-400 font-bold">${ch.solved}</span> Solved (Indep.)</div>
+                        <div class="bg-cardbg p-2 rounded-xl border border-gray-800"><span class="text-indigo-400 font-bold">${ch.ai}</span> AI-Assisted</div>
+                        <div class="bg-cardbg p-2 rounded-xl border border-gray-800"><span class="text-amber-400 font-bold">${ch.partial}</span> Partial</div>
+                        <div class="bg-cardbg p-2 rounded-xl border border-gray-800"><span class="text-rose-400 font-bold">${ch.unsolved}</span> Unsolved</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openAddTopicModal() { document.getElementById('topicModal').classList.remove('hidden'); }
+        function saveNewTopic(e) {
+            e.preventDefault();
+            let sub = document.getElementById('modalTopicSubject').value;
+            let name = document.getElementById('modalTopicName').value;
+            appData.topics.push({ id: Date.now(), subject: sub, name: name, solved: 0, ai: 0, partial: 0, unsolved: 0 });
+            saveData();
+            renderPcmChapters();
+            closeModal('topicModal');
+            document.getElementById('modalTopicName').value = '';
+        }
+
+        function openEditChapterModal(id) {
+            let ch = appData.topics.find(t => t.id === id);
+            if (!ch) return;
+            document.getElementById('editTopicId').value = ch.id;
+            document.getElementById('editTopicName').value = ch.name;
+            document.getElementById('editSolved').value = ch.solved;
+            document.getElementById('editAi').value = ch.ai;
+            document.getElementById('editPartial').value = ch.partial;
+            document.getElementById('editUnsolved').value = ch.unsolved;
+            document.getElementById('editTopicModal').classList.remove('hidden');
+        }
+
+        function saveChapterEdit(e) {
+            e.preventDefault();
+            let id = parseInt(document.getElementById('editTopicId').value);
+            let ch = appData.topics.find(t => t.id === id);
+            if (ch) {
+                ch.name = document.getElementById('editTopicName').value;
+                ch.solved = parseInt(document.getElementById('editSolved').value) || 0;
+                ch.ai = parseInt(document.getElementById('editAi').value) || 0;
+                ch.partial = parseInt(document.getElementById('editPartial').value) || 0;
+                ch.unsolved = parseInt(document.getElementById('editUnsolved').value) || 0;
+                saveData();
+                renderPcmChapters();
+                closeModal('editTopicModal');
+            }
+        }
+
+        // Notes Vault (Links & Formula Fix)
+        function openVaultModal() { document.getElementById('vaultModal').classList.remove('hidden'); }
+        function saveVaultItem(e) {
+            e.preventDefault();
+            let sub = document.getElementById('vaultSubject').value;
+            let title = document.getElementById('vaultTitle').value;
+            let content = document.getElementById('vaultContent').value;
+            appData.vault.push({ id: Date.now(), subject: sub, title: title, content: content });
+            saveData();
+            renderVault();
+            closeModal('vaultModal');
+            document.getElementById('vaultTitle').value = '';
+            document.getElementById('vaultContent').value = '';
+        }
+
+        function renderVault() {
+            let container = document.getElementById('vaultContainer');
+            container.innerHTML = '';
+            if (appData.vault.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 italic col-span-3">No notes or formulas saved yet in the vault.</p>`;
+                return;
+            }
+            appData.vault.forEach(item => {
+                // Auto detect if content is a URL/Link and format it nicely with anchor tag target="_blank"
+                let formattedContent = item.content;
+                if (item.content.startsWith('http://') || item.content.startsWith('https://')) {
+                    formattedContent = `<a href="${item.content}" target="_blank" class="text-indigo-400 underline break-all flex items-center gap-1.5"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open Link / PDF</a>`;
+                } else {
+                    formattedContent = `<p class="whitespace-pre-wrap">${item.content}</p>`;
+                }
+
+                let card = document.createElement('div');
+                card.className = 'glass p-5 rounded-2xl border border-gray-800 space-y-2';
+                card.innerHTML = `
+                    <div class="flex justify-between items-center text-xs text-indigo-400 font-semibold">
+                        <span>${item.subject}</span>
+                        <button onclick="deleteVaultItem(${item.id})" class="text-rose-400 hover:text-rose-300"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                    <h4 class="font-bold text-base">${item.title}</h4>
+                    <div class="text-sm text-gray-300 mt-2">${formattedContent}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function deleteVaultItem(id) {
+            appData.vault = appData.vault.filter(v => v.id !== id);
+            saveData();
+            renderVault();
+        }
+
+        // AI Doubt Solver Integration (Gemini API)
+        async function askGeminiAI() {
+            let apiKey = document.getElementById('geminiApiKey').value.trim();
+            let prompt = document.getElementById('aiPromptInput').value.trim();
+            let chatBox = document.getElementById('aiChatBox');
+
+            if (!prompt) return;
+            if (!apiKey) {
+                alert('Please enter your Gemini API Key in the top right box of the AI tab.');
+                return;
+            }
+
+            chatBox.innerHTML += `<div class="text-right"><span class="bg-indigo-600 text-white px-3 py-2 rounded-xl inline-block">You: ${prompt}</span></div>`;
+            document.getElementById('aiPromptInput').value = '';
+
+            let loadingId = 'loading_' + Date.now();
+            chatBox.innerHTML += `<div id="${loadingId}" class="text-left text-gray-400 italic">AI is thinking...</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: "You are a top JEE Physics, Chemistry & Maths expert tutor. Answer this JEE doubt clearly and concisely: " + prompt }] }] })
+                });
+
+                let data = await response.json();
+                document.getElementById(loadingId).remove();
+
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    let reply = data.candidates[0].content.parts[0].text;
+                    chatBox.innerHTML += `<div class="text-left"><span class="bg-cardbg border border-gray-700 text-gray-100 px-3 py-2 rounded-xl inline-block whitespace-pre-wrap">${reply}</span></div>`;
+                } else {
+                    chatBox.innerHTML += `<div class="text-left text-rose-400">AI Error: Invalid API key or request limit reached.</div>`;
+                }
+            } catch (err) {
+                document.getElementById(loadingId).remove();
+                chatBox.innerHTML += `<div class="text-left text-rose-400">Network Error: Failed to connect to Gemini AI.</div>`;
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Mistakes Log
+        function openMistakeModal() { document.getElementById('mistakeModal').classList.remove('hidden'); }
+        function saveMistake(e) {
+            e.preventDefault();
+            let topic = document.getElementById('mistakeTopic').value;
+            let reason = document.getElementById('mistakeReason').value;
+            let takeaway = document.getElementById('mistakeTakeaway').value;
+            appData.mistakes.push({ id: Date.now(), topic, reason, takeaway });
+            saveData();
+            renderMistakes();
+            closeModal('mistakeModal');
+            document.getElementById('mistakeTopic').value = '';
+            document.getElementById('mistakeReason').value = '';
+            document.getElementById('mistakeTakeaway').value = '';
+        }
+        function renderMistakes() {
+            let container = document.getElementById('mistakesContainer');
+            container.innerHTML = '';
+            if (appData.mistakes.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 italic col-span-3">No mistakes logged yet.</p>`;
+                return;
+            }
+            appData.mistakes.forEach(m => {
+                let card = document.createElement('div');
+                card.className = 'glass p-4 rounded-2xl border border-gray-800 space-y-2';
+                card.innerHTML = `
+                    <div class="flex justify-between items-center text-xs text-rose-400 font-semibold">
+                        <span>${m.topic}</span>
+                        <button onclick="deleteMistake(${m.id})" class="text-gray-400 hover:text-white"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                    <p class="text-xs text-gray-300"><strong>Reason:</strong> ${m.reason}</p>
+                    <p class="text-xs text-emerald-400"><strong>Takeaway:</strong> ${m.takeaway}</p>
+                `;
+                container.appendChild(card);
+            });
+        }
+        function deleteMistake(id) {
+            appData.mistakes = appData.mistakes.filter(m => m.id !== id);
+            saveData();
+            renderMistakes();
+        }
+
+        // To-Do
+        function addTodoItem(e) {
+            e.preventDefault();
+            let input = document.getElementById('todoInput');
+            appData.todos.push({ id: Date.now(), text: input.value, completed: false });
+            saveData();
+            renderTodos();
+            input.value = '';
+        }
+        function renderTodos() {
+            let container = document.getElementById('todoListContainer');
+            container.innerHTML = '';
+            if (appData.todos.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 italic">No tasks added yet.</p>`;
+                return;
+            }
+            appData.todos.forEach(t => {
+                let div = document.createElement('div');
+                div.className = 'flex justify-between items-center bg-cardbg p-3 rounded-xl border border-gray-800 text-sm';
+                div.innerHTML = `
+                    <span class="${t.completed ? 'line-through text-gray-500' : ''}">${t.text}</span>
+                    <div class="flex gap-2">
+                        <button onclick="toggleTodo(${t.id})" class="text-xs px-2 py-1 rounded bg-gray-800">${t.completed ? 'Undo' : 'Done'}</button>
+                        <button onclick="deleteTodo(${t.id})" class="text-xs px-2 py-1 rounded bg-rose-900/40 text-rose-300">Delete</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        function toggleTodo(id) {
+            let t = appData.todos.find(x => x.id === id);
+            if (t) { t.completed = !t.completed; saveData(); renderTodos(); }
+        }
+        function deleteTodo(id) {
+            appData.todos = appData.todos.filter(x => x.id !== id);
+            saveData();
+            renderTodos();
+        }
+
+        // Timetable & Timer
+        let timerInterval = null;
+        let timeLeft = 25 * 60;
+        function updateTimerDisplay() {
+            let m = Math.floor(timeLeft / 60);
+            let s = timeLeft % 60;
+            document.getElementById('timerDisplay').innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+        function startTimer() {
+            if (timerInterval) return;
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateTimerDisplay();
+                } else {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    alert('Pomodoro session completed!');
+                }
+            }, 1000);
+        }
+        function pauseTimer() { clearInterval(timerInterval); timerInterval = null; }
+        function resetTimer() { pauseTimer(); timeLeft = 25 * 60; updateTimerDisplay(); }
+
+        function openTimetableModal() { document.getElementById('timetableModal').classList.remove('hidden'); }
+        function saveTimetableSlot(e) {
+            e.preventDefault();
+            let time = document.getElementById('slotTime').value;
+            let task = document.getElementById('slotTask').value;
+            appData.timetable.push({ id: Date.now(), time, task });
+            saveData();
+            renderTimetable();
+            closeModal('timetableModal');
+            document.getElementById('slotTime').value = '';
+            document.getElementById('slotTask').value = '';
+        }
+        function renderTimetable() {
+            let container = document.getElementById('timetableContainer');
+            container.innerHTML = '';
+            if (appData.timetable.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 italic">No custom timetable slots added yet.</p>`;
+                return;
+            }
+            appData.timetable.forEach(s => {
+                let div = document.createElement('div');
+                div.className = 'flex justify-between items-center bg-cardbg p-3 rounded-xl border border-gray-800 text-sm';
+                div.innerHTML = `<span><strong>${s.time}</strong>: ${s.task}</span> <button onclick="deleteTimetable(${s.id})" class="text-rose-400 text-xs"><i class="fa-solid fa-trash"></i></button>`;
+                container.appendChild(div);
+            });
+        }
+        function deleteTimetable(id) {
+            appData.timetable = appData.timetable.filter(s => s.id !== id);
+            saveData();
+            renderTimetable();
+        }
+
+        // Auth Simulation / Firebase Login
+        function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
+        function simulateAuthLogin() {
+            let email = document.getElementById('authEmail').value;
+            let pass = document.getElementById('authPassword').value;
+            if (!email || !pass) {
+                alert('Please enter email and password.');
+                return;
+            }
+            auth.signInWithEmailAndPassword(email, pass).catch(() => {
+                auth.createUserWithEmailAndPassword(email, pass).catch(err => alert(err.message));
+            }).then(() => closeModal('authModal'));
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function renderAll() {
+            renderDashboard();
             renderPcmChapters();
             renderVault();
             renderMistakes();
@@ -520,273 +887,7 @@
             renderTimetable();
         }
 
-        function renderHeatmap() {
-            const container = document.getElementById('heatmapContainer');
-            container.innerHTML = '';
-            for(let i = 29; i >= 0; i--) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                const ds = d.toISOString().split('T')[0];
-                const log = appData.dailyLogs[ds] || { hours: 0, questions: 0 };
-                let bg = 'bg-gray-800';
-                if(log.questions > 50) bg = 'bg-indigo-400';
-                else if(log.questions > 20) bg = 'bg-indigo-600';
-                else if(log.questions > 0 || log.hours > 0) bg = 'bg-indigo-950';
-
-                const cell = document.createElement('div');
-                cell.className = `heatmap-cell ${bg}`;
-                cell.title = `${ds}: ${log.hours}h, ${log.questions} Qs`;
-                container.appendChild(cell);
-            }
-        }
-
-        function renderPcmChapters() {
-            const container = document.getElementById('pcmChaptersContainer');
-            container.innerHTML = '';
-            appData.topics.filter(t => t.subject === currentPcmSub).forEach(t => {
-                container.innerHTML += `
-                    <div class="glass p-4 rounded-xl border border-gray-800 space-y-3">
-                        <div class="flex justify-between items-center">
-                            <h4 class="font-bold text-sm text-gray-200">${t.name}</h4>
-                            <div class="flex gap-2">
-                                <button onclick="openEditTopic(${t.id})" class="text-xs bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 px-2.5 py-1 rounded-lg">Edit Qs</button>
-                                <button onclick="deleteTopic(${t.id})" class="text-gray-500 hover:text-rose-400 text-xs px-2"><i class="fa-solid fa-trash"></i></button>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-4 gap-2 text-center text-xs">
-                            <div class="bg-cardbg p-2 rounded-lg border border-gray-800"><span class="text-emerald-400 block font-bold text-sm">${t.solved}</span>Solved</div>
-                            <div class="bg-cardbg p-2 rounded-lg border border-gray-800"><span class="text-indigo-400 block font-bold text-sm">${t.ai}</span>AI</div>
-                            <div class="bg-cardbg p-2 rounded-lg border border-gray-800"><span class="text-amber-400 block font-bold text-sm">${t.partial}</span>Partial</div>
-                            <div class="bg-cardbg p-2 rounded-lg border border-gray-800"><span class="text-rose-400 block font-bold text-sm">${t.unsolved}</span>Unsolved</div>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        function openEditTopic(id) {
-            const t = appData.topics.find(item => item.id === id);
-            if(!t) return;
-            document.getElementById('editTopicId').value = t.id;
-            document.getElementById('editTopicName').value = t.name;
-            document.getElementById('editSolved').value = t.solved;
-            document.getElementById('editAi').value = t.ai;
-            document.getElementById('editPartial').value = t.partial;
-            document.getElementById('editUnsolved').value = t.unsolved;
-            document.getElementById('editTopicModal').classList.remove('hidden');
-        }
-
-        function saveChapterEdit(e) {
-            e.preventDefault();
-            const id = parseInt(document.getElementById('editTopicId').value);
-            const t = appData.topics.find(item => item.id === id);
-            if(t) {
-                t.name = document.getElementById('editTopicName').value;
-                t.solved = parseInt(document.getElementById('editSolved').value) || 0;
-                t.ai = parseInt(document.getElementById('editAi').value) || 0;
-                t.partial = parseInt(document.getElementById('editPartial').value) || 0;
-                t.unsolved = parseInt(document.getElementById('editUnsolved').value) || 0;
-                saveData();
-                renderAll();
-                closeModal('editTopicModal');
-            }
-        }
-
-        function renderVault() {
-            const container = document.getElementById('vaultContainer');
-            container.innerHTML = '';
-            appData.vault.forEach((v, idx) => {
-                container.innerHTML += `
-                    <div class="glass p-4 rounded-xl border border-gray-800 space-y-2">
-                        <div class="flex justify-between items-center text-xs text-indigo-400 font-semibold">
-                            <span>${v.subject}</span>
-                            <button onclick="deleteVault(${idx})" class="text-gray-500 hover:text-rose-400"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                        <h4 class="font-bold text-sm">${v.title}</h4>
-                        <p class="text-xs text-gray-300 whitespace-pre-line bg-darkbg p-3 rounded-lg border border-gray-800">${v.content}</p>
-                    </div>`;
-            });
-        }
-
-        function renderMistakes() {
-            const container = document.getElementById('mistakesContainer');
-            container.innerHTML = '';
-            appData.mistakes.forEach((m, idx) => {
-                container.innerHTML += `
-                    <div class="glass p-4 rounded-xl border border-gray-800 space-y-2">
-                        <div class="flex justify-between text-xs text-rose-400 font-semibold"><span>${m.topic}</span><button onclick="deleteMistake(${idx})"><i class="fa-solid fa-trash"></i></button></div>
-                        <p class="text-xs text-gray-300"><b>Mistake:</b> ${m.reason}</p>
-                        <p class="text-xs text-emerald-400"><b>Takeaway:</b> ${m.takeaway}</p>
-                    </div>`;
-            });
-        }
-
-        function renderTodos() {
-            const container = document.getElementById('todoListContainer');
-            container.innerHTML = '';
-            appData.todos.forEach((todo, idx) => {
-                container.innerHTML += `
-                    <div class="flex items-center justify-between bg-cardbg p-3 rounded-xl border border-gray-800 text-sm">
-                        <span class="${todo.done ? 'line-through text-gray-500' : ''}">${todo.text}</span>
-                        <div class="flex gap-2">
-                            <button onclick="toggleTodo(${idx})" class="text-xs px-2.5 py-1 rounded-lg ${todo.done ? 'bg-emerald-900/40 text-emerald-400' : 'bg-gray-800 text-gray-400'}">Done</button>
-                            <button onclick="deleteTodo(${idx})" class="text-gray-500 hover:text-rose-400 px-2"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        function renderTimetable() {
-            const container = document.getElementById('timetableContainer');
-            container.innerHTML = appData.timetable.length ? '' : '<p class="text-xs text-gray-500">No timetable slots added yet.</p>';
-            appData.timetable.forEach((slot, idx) => {
-                container.innerHTML += `
-                    <div class="flex justify-between items-center bg-cardbg p-3 rounded-xl border border-gray-800 text-sm">
-                        <span><b>${slot.time}</b>: ${slot.task}</span>
-                        <button onclick="deleteTimetable(${idx})" class="text-gray-500 hover:text-rose-400"><i class="fa-solid fa-trash"></i></button>
-                    </div>`;
-            });
-        }
-
-        // Calculator Logic
-        function toggleCalculatorModal() {
-            document.getElementById('calculatorModal').classList.toggle('hidden');
-        }
-        function calcClear() { document.getElementById('calcDisplay').value = '0'; }
-        function calcAppend(val) {
-            let disp = document.getElementById('calcDisplay');
-            if(disp.value === '0' || disp.value === 'Error') disp.value = '';
-            disp.value += val;
-        }
-        function calcCalculate() {
-            let disp = document.getElementById('calcDisplay');
-            try {
-                let expr = disp.value
-                    .replace(/sin\(/g, 'Math.sin(')
-                    .replace(/cos\(/g, 'Math.cos(')
-                    .replace(/tan\(/g, 'Math.tan(')
-                    .replace(/log\(/g, 'Math.log10(')
-                    .replace(/sqrt\(/g, 'Math.sqrt(');
-                disp.value = eval(expr);
-            } catch(e) {
-                disp.value = 'Error';
-            }
-        }
-
-        // AI Doubt Solver
-        async function askGeminiAI() {
-            const prompt = document.getElementById('aiPromptInput').value.trim();
-            const apiKey = document.getElementById('geminiApiKey').value.trim();
-            const chatBox = document.getElementById('aiChatBox');
-            if(!prompt) return;
-
-            chatBox.innerHTML += `<div class="text-right"><span class="bg-indigo-600 px-3 py-1.5 rounded-xl inline-block text-white">${prompt}</span></div>`;
-            document.getElementById('aiPromptInput').value = '';
-
-            if(!apiKey) {
-                chatBox.innerHTML += `<div><span class="bg-gray-800 px-3 py-1.5 rounded-xl inline-block text-gray-300">Please enter your Gemini API key!</span></div>`;
-                return;
-            }
-
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: "You are an expert JEE tutor. Answer concisely: " + prompt }] }] })
-                });
-                const data = await response.json();
-                const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response.";
-                chatBox.innerHTML += `<div><span class="bg-cardhover border border-gray-700 px-3 py-1.5 rounded-xl inline-block text-gray-200">${reply}</span></div>`;
-            } catch(err) {
-                chatBox.innerHTML += `<div><span class="bg-rose-950 px-3 py-1.5 rounded-xl inline-block text-rose-300">API Error.</span></div>`;
-            }
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        // Modals Open/Close
-        function openVaultModal() { document.getElementById('vaultModal').classList.remove('hidden'); }
-        function openAddTopicModal() { document.getElementById('topicModal').classList.remove('hidden'); }
-        function openMistakeModal() { document.getElementById('mistakeModal').classList.remove('hidden'); }
-        function openTimetableModal() { document.getElementById('timetableModal').classList.remove('hidden'); }
-        function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-        function saveVaultItem(e) {
-            e.preventDefault();
-            appData.vault.push({
-                subject: document.getElementById('vaultSubject').value,
-                title: document.getElementById('vaultTitle').value,
-                content: document.getElementById('vaultContent').value
-            });
-            saveData(); renderAll(); closeModal('vaultModal');
-        }
-
-        function saveNewTopic(e) {
-            e.preventDefault();
-            appData.topics.push({
-                id: Date.now(),
-                subject: document.getElementById('modalTopicSubject').value,
-                name: document.getElementById('modalTopicName').value,
-                solved: 0, ai: 0, partial: 0, unsolved: 0
-            });
-            saveData(); renderAll(); closeModal('topicModal');
-        }
-
-        function saveMistake(e) {
-            e.preventDefault();
-            appData.mistakes.push({
-                topic: document.getElementById('mistakeTopic').value,
-                reason: document.getElementById('mistakeReason').value,
-                takeaway: document.getElementById('mistakeTakeaway').value
-            });
-            saveData(); renderAll(); closeModal('mistakeModal');
-        }
-
-        function saveTimetableSlot(e) {
-            e.preventDefault();
-            appData.timetable.push({
-                time: document.getElementById('slotTime').value,
-                task: document.getElementById('slotTask').value
-            });
-            saveData(); renderAll(); closeModal('timetableModal');
-        }
-
-        function addTodoItem(e) {
-            e.preventDefault();
-            appData.todos.push({ text: document.getElementById('todoInput').value, done: false });
-            document.getElementById('todoInput').value = '';
-            saveData(); renderAll();
-        }
-
-        function toggleTodo(idx) { appData.todos[idx].done = !appData.todos[idx].done; saveData(); renderAll(); }
-        function deleteTodo(idx) { appData.todos.splice(idx, 1); saveData(); renderAll(); }
-        function deleteTopic(id) { appData.topics = appData.topics.filter(t => t.id !== id); saveData(); renderAll(); }
-        function deleteVault(idx) { appData.vault.splice(idx, 1); saveData(); renderAll(); }
-        function deleteMistake(idx) { appData.mistakes.splice(idx, 1); saveData(); renderAll(); }
-        function deleteTimetable(idx) { appData.timetable.splice(idx, 1); saveData(); renderAll(); }
-
-        function simulateAuthLogin() {
-            const email = document.getElementById('authEmail').value;
-            const pass = document.getElementById('authPassword').value;
-            auth.signInWithEmailAndPassword(email, pass).catch(() => {
-                auth.createUserWithEmailAndPassword(email, pass);
-            }).then(() => closeModal('authModal'));
-        }
-
-        // Pomodoro Timer
-        let timerInterval;
-        let timeLeft = 25 * 60;
-        function updateTimerDisplay() {
-            let m = Math.floor(timeLeft / 60), s = timeLeft % 60;
-            document.getElementById('timerDisplay').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-        }
-        function startTimer() {
-            if(timerInterval) return;
-            timerInterval = setInterval(() => {
-                if(timeLeft > 0) { timeLeft--; updateTimerDisplay(); }
-            }, 1000);
-        }
-        function pauseTimer() { clearInterval(timerInterval); timerInterval = null; }
-        function resetTimer() { pauseTimer(); timeLeft = 25 * 60; updateTimerDisplay(); }
+        renderAll();
     </script>
 </body>
 </html>
