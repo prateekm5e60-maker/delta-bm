@@ -863,7 +863,7 @@
             renderTimetable();
         }
 
-        // Auth Simulation / Firebase Login
+        // Auth Simulation / Firebase Login & Signup Fix
         function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
         function simulateAuthLogin() {
             let email = document.getElementById('authEmail').value;
@@ -872,9 +872,21 @@
                 alert('Please enter email and password.');
                 return;
             }
-            auth.signInWithEmailAndPassword(email, pass).catch(() => {
-                auth.createUserWithEmailAndPassword(email, pass).catch(err => alert(err.message));
-            }).then(() => closeModal('authModal'));
+            auth.signInWithEmailAndPassword(email, pass)
+                .then(() => {
+                    closeModal('authModal');
+                })
+                .catch((error) => {
+                    if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+                        auth.createUserWithEmailAndPassword(email, pass)
+                            .then(() => {
+                                closeModal('authModal');
+                            })
+                            .catch(err => alert(err.message));
+                    } else {
+                        alert(error.message);
+                    }
+                });
         }
 
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
