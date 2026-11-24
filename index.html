@@ -1,0 +1,117 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delta BM - JEE Tracker</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100vh;display:grid;
+  place-items:center;padding:20px;
+  background:#101827;color:white;
+  font-family:Arial,sans-serif
+}
+.card{
+  width:100%;max-width:390px;padding:28px;
+  background:#1d293b;border-radius:18px
+}
+h1{text-align:center;color:#60a5fa}
+p{text-align:center;color:#b8c5d6}
+input,button{
+  width:100%;padding:14px;margin-top:14px;
+  border-radius:9px;font-size:16px
+}
+input{
+  background:#101827;color:white;
+  border:1px solid #526178
+}
+button{
+  border:0;background:#2563eb;
+  color:white;font-weight:bold
+}
+.switch{background:transparent;color:#93c5fd}
+#message{margin-top:15px;text-align:center}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>DELTA BM</h1>
+<p>My Personal JEE Study Tracker</p>
+<h2 id="heading">Login</h2>
+
+<input id="email" type="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+
+<button id="mainBtn">Login</button>
+<button class="switch" id="switchBtn">Create Account</button>
+<div id="message"></div>
+</div>
+
+<script type="module">
+import {initializeApp} from
+"https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+
+import {
+ getAuth,
+ createUserWithEmailAndPassword,
+ signInWithEmailAndPassword
+} from
+"https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+// Firebase configuration baad mein add karenge
+const firebaseConfig = {
+ apiKey: "PASTE_API_KEY",
+ authDomain: "PASTE_AUTH_DOMAIN",
+ projectId: "PASTE_PROJECT_ID",
+ appId: "PASTE_APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+let signup = false;
+
+const heading = document.getElementById("heading");
+const mainBtn = document.getElementById("mainBtn");
+const switchBtn = document.getElementById("switchBtn");
+const message = document.getElementById("message");
+
+switchBtn.onclick = () => {
+ signup = !signup;
+ heading.textContent = signup ? "Create Account" : "Login";
+ mainBtn.textContent = signup ? "Sign Up" : "Login";
+ switchBtn.textContent = signup ? "Back to Login" : "Create Account";
+ message.textContent = "";
+};
+
+mainBtn.onclick = async () => {
+ const email = document.getElementById("email").value.trim();
+ const password = document.getElementById("password").value;
+
+ if (!email || !password) {
+   message.textContent = "Enter email and password";
+   return;
+ }
+
+ mainBtn.disabled = true;
+ message.textContent = "Please wait...";
+
+ try {
+   if (signup) {
+     await createUserWithEmailAndPassword(auth,email,password);
+     message.textContent = "Account created!";
+   } else {
+     await signInWithEmailAndPassword(auth,email,password);
+     message.textContent = "Login successful!";
+   }
+ } catch(error) {
+   message.textContent = error.message;
+ } finally {
+   mainBtn.disabled = false;
+ }
+};
+</script>
+</body>
+</html>
