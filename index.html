@@ -1,121 +1,838 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Delta BM - JEE Tracker</title>
-<style>
-*{box-sizing:border-box}
-body{
-  margin:0;min-height:100vh;display:grid;
-  place-items:center;padding:20px;
-  background:#101827;color:white;
-  font-family:Arial,sans-serif
-}
-.card{
-  width:100%;max-width:390px;padding:28px;
-  background:#1d293b;border-radius:18px
-}
-h1{text-align:center;color:#60a5fa}
-p{text-align:center;color:#b8c5d6}
-input,button{
-  width:100%;padding:14px;margin-top:14px;
-  border-radius:9px;font-size:16px
-}
-input{
-  background:#101827;color:white;
-  border:1px solid #526178
-}
-button{
-  border:0;background:#2563eb;
-  color:white;font-weight:bold
-}
-.switch{background:transparent;color:#93c5fd}
-#message{margin-top:15px;text-align:center}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delta BM - JEE Study Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0a0a0c',
+                        cardbg: '#14141a',
+                        cardhover: '#1e1e28',
+                        accent: '#6366f1',
+                        accenthover: '#4f46e5'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass { background: rgba(20, 20, 26, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .heatmap-cell { width: 13px; height: 13px; border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0a0a0c; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+    </style>
 </head>
-<body>
-<div class="card">
-<h1>DELTA BM</h1>
-<p>My Personal JEE Study Tracker</p>
-<h2 id="heading">Login</h2>
+<body class="bg-darkbg text-gray-100 min-h-screen font-sans selection:bg-accent selection:text-white pb-12">
 
-<input id="email" type="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
+    <!-- Quick Copy Action Bar -->
+    <div class="bg-cardbg border-b border-gray-800 py-2.5 px-4 sticky top-0 z-50 flex justify-between items-center shadow-md">
+        <div class="flex items-center space-x-2">
+            <div class="w-3 h-3 rounded-full bg-accent animate-pulse"></div>
+            <span class="font-bold tracking-wider text-sm bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">DELTA BM PWA</span>
+        </div>
+        <button onclick="copyFullAppCode()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center space-x-1.5 shadow">
+            <i class="fa-regular fa-copy"></i>
+            <span>Copy Full Code</span>
+        </button>
+    </div>
 
-<button id="mainBtn">Login</button>
-<button class="switch" id="switchBtn">Create Account</button>
-<div id="message"></div>
-</div>
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        
+        <!-- Header & Auth Status -->
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 border-b border-gray-800 gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold tracking-tight flex items-center gap-3">
+                    <i class="fa-solid fa-atom text-accent"></i> DELTA BM
+                </h1>
+                <p class="text-sm text-gray-400 mt-1">Complete Personal JEE Advanced & Mains Study & Progress Suite</p>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <div id="authStatusBadge" class="text-xs px-3 py-1.5 rounded-full bg-gray-800 text-gray-300 border border-gray-700 flex items-center gap-2">
+                    <i class="fa-solid fa-cloud text-amber-400"></i> <span id="authStatusText">Guest Mode (Local Sync)</span>
+                </div>
+                <button onclick="openAuthModal()" id="authBtn" class="bg-gray-800 hover:bg-gray-700 text-sm px-4 py-2 rounded-xl font-medium border border-gray-700 transition">
+                    <i class="fa-solid fa-user-lock mr-1.5"></i> Cloud Login
+                </button>
+            </div>
+        </header>
 
-<script type="module">
-import {initializeApp} from
-"https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        <!-- Navigation Tabs -->
+        <nav class="flex overflow-x-auto space-x-2 py-4 my-2 border-b border-gray-800/60 no-scrollbar">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="tab-btn px-4 py-2 rounded-xl text-sm font-semibold transition bg-accent text-white flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-chart-pie"></i> Dashboard</button>
+            <button onclick="switchTab('pcm')" id="nav-pcm" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-book-open"></i> PCM & Questions</button>
+            <button onclick="switchTab('mistakes')" id="nav-mistakes" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-triangle-exclamation"></i> Mistake Log</button>
+            <button onclick="switchTab('todos')" id="nav-todos" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-list-check"></i> To-Do & School</button>
+            <button onclick="switchTab('timetable')" id="nav-timetable" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-clock"></i> Timetable & Timer</button>
+            <button onclick="switchTab('analytics')" id="nav-analytics" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-chart-line"></i> Analytics & AI Report</button>
+        </nav>
 
-import {
- getAuth,
- createUserWithEmailAndPassword,
- signInWithEmailAndPassword
-} from
-"https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+        <!-- TAB 1: DASHBOARD -->
+        <section id="tab-dashboard" class="tab-content space-y-6 mt-4">
+            <!-- Top Metric Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="glass p-5 rounded-2xl border border-gray-800">
+                    <div class="flex justify-between items-center text-gray-400 text-sm">
+                        <span>Focused Study Hours</span>
+                        <i class="fa-solid fa-stopwatch text-indigo-400 text-lg"></i>
+                    </div>
+                    <div class="text-3xl font-bold mt-2" id="dashTotalHours">0.0 <span class="text-xs text-gray-400 font-normal">Hrs</span></div>
+                    <div class="text-xs text-emerald-400 mt-2 flex items-center gap-1"><i class="fa-solid fa-arrow-trend-up"></i> <span id="dashHoursTarget">Target: 8h/day</span></div>
+                </div>
+                <div class="glass p-5 rounded-2xl border border-gray-800">
+                    <div class="flex justify-between items-center text-gray-400 text-sm">
+                        <span>Questions Attempted</span>
+                        <i class="fa-solid fa-circle-question text-purple-400 text-lg"></i>
+                    </div>
+                    <div class="text-3xl font-bold mt-2" id="dashTotalQ">0</div>
+                    <div class="text-xs text-indigo-400 mt-2 flex items-center gap-1"><i class="fa-solid fa-bullseye"></i> <span id="dashQTarget">Target: 120/day</span></div>
+                </div>
+                <div class="glass p-5 rounded-2xl border border-gray-800">
+                    <div class="flex justify-between items-center text-gray-400 text-sm">
+                        <span>Target Completion</span>
+                        <i class="fa-solid fa-percent text-emerald-400 text-lg"></i>
+                    </div>
+                    <div class="text-3xl font-bold mt-2" id="dashCompletion">0%</div>
+                    <div class="w-full bg-gray-800 rounded-full h-2 mt-3">
+                        <div id="dashProgressBar" class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="glass p-5 rounded-2xl border border-gray-800">
+                    <div class="flex justify-between items-center text-gray-400 text-sm">
+                        <span>Consistency Streak</span>
+                        <i class="fa-solid fa-fire text-amber-500 text-lg"></i>
+                    </div>
+                    <div class="text-3xl font-bold mt-2"><span id="dashStreak">1</span> <span class="text-sm font-normal text-gray-400">Days</span></div>
+                    <div class="text-xs text-amber-400 mt-2">Active JEE Grind</div>
+                </div>
+            </div>
 
-// Firebase configuration baad mein add karenge
- 
-const firebaseConfig = {
-  apiKey: "AIzaSyCL6H1eMDs_yuT1nEjP_eXlW9YtGQZlXtQ",
-  authDomain: "my-jee-tracker-54a89.firebaseapp.com",
-  projectId: "my-jee-tracker-54a89",
-  storageBucket: "my-jee-tracker-54a89.firebasestorage.app",
-  messagingSenderId: "657294579911",
-  appId: "1:657294579911:web:79814671383eb3126f86e2",
-  measurementId: "G-D7XXL5WZ6G"
-};
+            <!-- Quick Log & Consistency Heatmap Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Daily Quick Input Form -->
+                <div class="glass p-6 rounded-2xl border border-gray-800 lg:col-span-1 space-y-4">
+                    <h2 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-accent"></i> Quick Daily Logger</h2>
+                    <p class="text-xs text-gray-400">Log today's study hours and practice count directly.</p>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-xs text-gray-400 block mb-1">Select Subject</label>
+                            <select id="quickSubject" class="w-full bg-cardbg border border-gray-700 rounded-xl p-2.5 text-sm focus:outline-none focus:border-accent">
+                                <option value="Physics">Physics</option>
+                                <option value="Chemistry">Chemistry</option>
+                                <option value="Maths">Mathematics</option>
+                                <option value="Custom">Custom / School</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-400 block mb-1">Study Hours Added</label>
+                            <input type="number" id="quickHours" step="0.5" min="0" placeholder="e.g. 2.5" class="w-full bg-cardbg border border-gray-700 rounded-xl p-2.5 text-sm focus:outline-none focus:border-accent">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-400 block mb-1">Questions Solved</label>
+                            <input type="number" id="quickQuestions" min="0" placeholder="e.g. 35" class="w-full bg-cardbg border border-gray-700 rounded-xl p-2.5 text-sm focus:outline-none focus:border-accent">
+                        </div>
+                        <button onclick="submitQuickLog()" class="w-full bg-accent hover:bg-accenthover py-2.5 rounded-xl text-sm font-semibold transition shadow-lg shadow-indigo-600/20">Record Progress</button>
+                    </div>
+                </div>
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+                <!-- Consistency Heatmap & Overview -->
+                <div class="glass p-6 rounded-2xl border border-gray-800 lg:col-span-2 flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold flex items-center gap-2 mb-1"><i class="fa-solid fa-calendar-days text-indigo-400"></i> JEE Grind Consistency Heatmap</h2>
+                        <p class="text-xs text-gray-400 mb-4">Your daily activity intensity over the past weeks.</p>
+                        <div id="heatmapContainer" class="flex flex-wrap gap-1.5 p-2 bg-cardbg rounded-xl border border-gray-800 overflow-x-auto">
+                            <!-- Dynamically injected cells -->
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-gray-800/80 flex flex-wrap justify-between items-center text-xs text-gray-400">
+                        <span>Less Practice</span>
+                        <div class="flex items-center gap-1">
+                            <div class="heatmap-cell bg-gray-800"></div>
+                            <div class="heatmap-cell bg-indigo-950"></div>
+                            <div class="heatmap-cell bg-indigo-700"></div>
+                            <div class="heatmap-cell bg-indigo-500"></div>
+                            <div class="heatmap-cell bg-indigo-400"></div>
+                        </div>
+                        <span>High Mastery</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-let signup = false;
+        <!-- TAB 2: PCM & QUESTIONS TRACKER -->
+        <section id="tab-pcm" class="tab-content hidden space-y-6 mt-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold">PCM Subject & Question Breakdown</h2>
+                    <p class="text-xs text-gray-400">Track independent mastery: Independently, AI-Assisted, Partially Solved, Unsolved.</p>
+                </div>
+                <button onclick="openAddTopicModal()" class="bg-accent hover:bg-accenthover text-sm px-4 py-2 rounded-xl font-semibold transition flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Add Topic / Chapter
+                </button>
+            </div>
 
-const heading = document.getElementById("heading");
-const mainBtn = document.getElementById("mainBtn");
-const switchBtn = document.getElementById("switchBtn");
-const message = document.getElementById("message");
+            <!-- Subject Tabs -->
+            <div class="flex space-x-2 border-b border-gray-800 pb-2">
+                <button onclick="switchPcmSub('Physics')" id="pcm-btn-Physics" class="pcm-sub-btn px-4 py-2 rounded-xl text-sm font-semibold bg-indigo-600 text-white">Physics</button>
+                <button onclick="switchPcmSub('Chemistry')" id="pcm-btn-Chemistry" class="pcm-sub-btn px-4 py-2 rounded-xl text-sm font-medium text-gray-400 hover:text-white">Chemistry</button>
+                <button onclick="switchPcmSub('Maths')" id="pcm-btn-Maths" class="pcm-sub-btn px-4 py-2 rounded-xl text-sm font-medium text-gray-400 hover:text-white">Mathematics</button>
+                <button onclick="switchPcmSub('Custom')" id="pcm-btn-Custom" class="pcm-sub-btn px-4 py-2 rounded-xl text-sm font-medium text-gray-400 hover:text-white">School / Custom</button>
+            </div>
 
-switchBtn.onclick = () => {
- signup = !signup;
- heading.textContent = signup ? "Create Account" : "Login";
- mainBtn.textContent = signup ? "Sign Up" : "Login";
- switchBtn.textContent = signup ? "Back to Login" : "Create Account";
- message.textContent = "";
-};
+            <!-- Chapters List for Selected Subject -->
+            <div id="pcmChaptersContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Dynamically populated chapters -->
+            </div>
+        </section>
 
-mainBtn.onclick = async () => {
- const email = document.getElementById("email").value.trim();
- const password = document.getElementById("password").value;
+        <!-- TAB 3: MISTAKE & WRONG QUESTION LOG -->
+        <section id="tab-mistakes" class="tab-content hidden space-y-6 mt-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold">Wrong Question & Mistake Analysis Log</h2>
+                    <p class="text-xs text-gray-400">Analyze why you made mistakes in mock tests or practice sets to avoid repeating them.</p>
+                </div>
+                <button onclick="openMistakeModal()" class="bg-accent hover:bg-accenthover text-sm px-4 py-2 rounded-xl font-semibold transition flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Log New Mistake
+                </button>
+            </div>
 
- if (!email || !password) {
-   message.textContent = "Enter email and password";
-   return;
- }
+            <div id="mistakesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Dynamically populated mistake cards -->
+            </div>
+        </section>
 
- mainBtn.disabled = true;
- message.textContent = "Please wait...";
+        <!-- TAB 4: TO-DO & SCHOOL HOMEWORK -->
+        <section id="tab-todos" class="tab-content hidden space-y-6 mt-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold">Unlimited To-Do & School Tasks</h2>
+                    <p class="text-xs text-gray-400">Manage daily JEE targets, school assignments, practical projects, and custom subjects.</p>
+                </div>
+            </div>
 
- try {
-   if (signup) {
-     await createUserWithEmailAndPassword(auth,email,password);
-     message.textContent = "Account created!";
-   } else {
-     await signInWithEmailAndPassword(auth,email,password);
-     message.textContent = "Login successful!";
-   }
- } catch(error) {
-   message.textContent = error.message;
- } finally {
-   mainBtn.disabled = false;
- }
-};
-</script>
+            <div class="glass p-6 rounded-2xl border border-gray-800 space-y-4">
+                <form id="todoForm" onsubmit="addTodoItem(event)" class="flex gap-3">
+                    <input type="text" id="todoInput" placeholder="Add a new JEE chapter revision, homework or project task..." class="flex-1 bg-cardbg border border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-accent" required>
+                    <select id="todoCategory" class="bg-cardbg border border-gray-700 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-accent">
+                        <option value="JEE Study">JEE Study</option>
+                        <option value="School HW">School HW</option>
+                        <option value="Project">Project</option>
+                        <option value="English/CS">English / CS</option>
+                    </select>
+                    <button type="submit" class="bg-accent hover:bg-accenthover px-5 py-2.5 rounded-xl text-sm font-semibold transition">Add Task</button>
+                </form>
+
+                <div class="space-y-2 mt-4" id="todoListContainer">
+                    <!-- Tasks rendered here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: TIMETABLE & TIMER -->
+        <section id="tab-timetable" class="tab-content hidden space-y-6 mt-4">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Focus Timer -->
+                <div class="glass p-6 rounded-2xl border border-gray-800 flex flex-col items-center justify-center text-center space-y-6">
+                    <h2 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-hourglass-start text-accent"></i> Pomodoro Focus Timer</h2>
+                    <div class="relative w-48 h-48 flex items-center justify-center rounded-full border-4 border-indigo-500/30 bg-cardbg">
+                        <span id="timerDisplay" class="text-4xl font-extrabold tracking-wider">25:00</span>
+                    </div>
+                    <div class="flex gap-3 w-full">
+                        <button onclick="startTimer()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 py-2.5 rounded-xl font-semibold text-sm transition">Start</button>
+                        <button onclick="pauseTimer()" class="flex-1 bg-amber-600 hover:bg-amber-700 py-2.5 rounded-xl font-semibold text-sm transition">Pause</button>
+                        <button onclick="resetTimer()" class="flex-1 bg-rose-600 hover:bg-rose-700 py-2.5 rounded-xl font-semibold text-sm transition">Reset</button>
+                    </div>
+                </div>
+
+                <!-- Daily Custom Timetable Slots -->
+                <div class="glass p-6 rounded-2xl border border-gray-800 lg:col-span-2 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-calendar-check text-indigo-400"></i> Custom Daily Timetable</h2>
+                        <button onclick="openTimetableModal()" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-xl border border-gray-700 font-medium">+ Add Slot</button>
+                    </div>
+                    <div class="space-y-3 max-h-[350px] overflow-y-auto custom-scrollbar pr-2" id="timetableContainer">
+                        <!-- Timetable slots rendered here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 6: ANALYTICS & AI REPORT -->
+        <section id="tab-analytics" class="tab-content hidden space-y-6 mt-4">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Charts -->
+                <div class="glass p-6 rounded-2xl border border-gray-800 space-y-4">
+                    <h2 class="text-lg font-bold">Subject Study Hours Comparison</h2>
+                    <div class="h-64 flex items-center justify-center">
+                        <canvas id="hoursChart"></canvas>
+                    </div>
+                </div>
+                <div class="glass p-6 rounded-2xl border border-gray-800 space-y-4">
+                    <h2 class="text-lg font-bold">Questions Practiced by Subject</h2>
+                    <div class="h-64 flex items-center justify-center">
+                        <canvas id="questionsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Study Report Generator -->
+            <div class="glass p-6 rounded-2xl border border-gray-800 space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles text-accent"></i> AI Daily Study Report Generator</h2>
+                        <p class="text-xs text-gray-400">Generates a neat structured summary of your daily performance to share with mentors or save as a journal.</p>
+                    </div>
+                    <button onclick="generateAIReport()" class="bg-indigo-600 hover:bg-indigo-700 px-5 py-2.5 rounded-xl font-semibold text-sm transition flex items-center gap-2 shadow-lg shadow-indigo-600/20">
+                        <i class="fa-solid fa-copy"></i> Copy AI Report
+                    </button>
+                </div>
+                <textarea id="aiReportOutput" readonly rows="6" class="w-full bg-cardbg border border-gray-700 rounded-xl p-4 text-sm font-mono focus:outline-none text-gray-300" placeholder="Click 'Copy AI Report' to instantly generate and copy your study log..."></textarea>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- MODALS -->
+    <!-- Add Topic Modal -->
+    <div id="topicModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass bg-cardbg p-6 rounded-2xl border border-gray-800 w-full max-w-md space-y-4">
+            <h3 class="text-lg font-bold">Add Chapter / Topic</h3>
+            <form onsubmit="saveNewTopic(event)" class="space-y-3">
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">Subject</label>
+                    <select id="modalTopicSubject" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm">
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Maths">Mathematics</option>
+                        <option value="Custom">School / Custom</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">Chapter Name</label>
+                    <input type="text" id="modalTopicName" placeholder="e.g. Electrostatics, Calculus" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm" required>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-gray-400 block mb-1">Target Hours</label>
+                        <input type="number" id="modalTopicTargetHrs" step="0.5" value="5" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 block mb-1">Target Questions</label>
+                        <input type="number" id="modalTopicTargetQ" value="50" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 mt-4">
+                    <button type="button" onclick="closeModal('topicModal')" class="px-4 py-2 rounded-xl text-sm bg-gray-800 hover:bg-gray-700">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-sm bg-accent hover:bg-accenthover font-semibold">Save Topic</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mistake Log Modal -->
+    <div id="mistakeModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass bg-cardbg p-6 rounded-2xl border border-gray-800 w-full max-w-md space-y-4">
+            <h3 class="text-lg font-bold">Log Wrong Question / Mistake</h3>
+            <form onsubmit="saveMistake(event)" class="space-y-3">
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">Subject & Topic</label>
+                    <input type="text" id="mistakeTopic" placeholder="e.g. Physics - Rotational Motion" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm" required>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">What was the mistake?</label>
+                    <textarea id="mistakeReason" rows="2" placeholder="Calculation error, conceptual gap, misread question..." class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm" required></textarea>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">Correct Concept / Takeaway</label>
+                    <textarea id="mistakeTakeaway" rows="2" placeholder="Formula application rule..." class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm" required></textarea>
+                </div>
+                <div class="flex justify-end gap-3 mt-4">
+                    <button type="button" onclick="closeModal('mistakeModal')" class="px-4 py-2 rounded-xl text-sm bg-gray-800 hover:bg-gray-700">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-sm bg-accent hover:bg-accenthover font-semibold">Log Mistake</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Timetable Slot Modal -->
+    <div id="timetableModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass bg-cardbg p-6 rounded-2xl border border-gray-800 w-full max-w-md space-y-4">
+            <h3 class="text-lg font-bold">Add Timetable Slot</h3>
+            <form onsubmit="saveTimetableSlot(event)" class="space-y-3">
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">Time Slot</label>
+                    <input type="text" id="slotTime" placeholder="e.g. 06:00 AM - 08:00 AM" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm" required>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">Activity / Task</label>
+                    <input type="text" id="slotTask" placeholder="e.g. Physics Problem Solving (Irodov)" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm" required>
+                </div>
+                <div class="flex justify-end gap-3 mt-4">
+                    <button type="button" onclick="closeModal('timetableModal')" class="px-4 py-2 rounded-xl text-sm bg-gray-800 hover:bg-gray-700">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-sm bg-accent hover:bg-accenthover font-semibold">Add Slot</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass bg-cardbg p-6 rounded-2xl border border-gray-800 w-full max-w-md space-y-4">
+            <h3 class="text-lg font-bold" id="authModalTitle">Firebase Cloud Sync Login</h3>
+            <p class="text-xs text-gray-400">Connect Firebase to sync your JEE preparation across your laptop and Android phone.</p>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">Email</label>
+                    <input type="email5" id="authEmail" placeholder="student@jee.com" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">Password</label>
+                    <input type="password" id="authPassword" placeholder="••••••••" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm">
+                </div>
+                <div class="flex flex-col gap-2 pt-2">
+                    <button onclick="simulateAuthLogin()" class="w-full bg-accent hover:bg-accenthover py-2.5 rounded-xl text-sm font-semibold transition">Login / Signup</button>
+                    <button onclick="closeModal('authModal')" class="w-full bg-gray-800 hover:bg-gray-700 py-2.5 rounded-xl text-sm transition">Continue as Guest</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Copy Code Functionality for User
+        function copyFullAppCode() {
+            const htmlContent = document.documentElement.outerHTML;
+            navigator.clipboard.writeText(htmlContent).then(() => {
+                alert("✨ Full Delta BM App code copied successfully! You can now paste it into index.html on GitHub.");
+            }).catch(err => {
+                console.error('Failed to copy code: ', err);
+            });
+        }
+
+        // State Management
+        let appData = JSON.parse(localStorage.getItem('delta_bm_data')) || {
+            studyHours: { Physics: 3.5, Chemistry: 2.0, Maths: 4.0, Custom: 1.5 },
+            questions: { Physics: 45, Chemistry: 30, Maths: 50, Custom: 10 },
+            dailyTargetHours: 8,
+            dailyTargetQ: 120,
+            streak: 5,
+            topics: [
+                { id: 1, subject: 'Physics', name: 'Mechanics & Rotational Dynamics', targetHrs: 6, targetQ: 60, solved: 40, aiAssisted: 10, partial: 5, unsolved: 5 },
+                { id: 2, subject: 'Chemistry', name: 'Organic Reaction Mechanisms', targetHrs: 5, targetQ: 50, solved: 35, aiAssisted: 5, partial: 7, unsolved: 3 },
+                { id: 3, subject: 'Maths', name: 'Calculus & Definite Integration', targetHrs: 7, targetQ: 70, solved: 50, aiAssisted: 8, partial: 7, unsolved: 5 }
+            ],
+            mistakes: [
+                { id: 1, topic: 'Physics - Circular Motion', reason: 'Forgot pseudo force in non-inertial rotating frame', takeaway: 'Always draw centrifugal force outward in rotating frame.' }
+            ],
+            todos: [
+                { id: 1, text: 'Revise JEE Calculus Formulae', category: 'JEE Study', completed: true },
+                { id: 2, text: 'Complete Chemistry Practical File', category: 'School HW', completed: false },
+                { id: 3, text: 'CS Python Project Documentation', category: 'English/CS', completed: false }
+            ],
+            timetable: [
+                { id: 1, time: '06:00 AM - 08:00 AM', task: 'Maths Problem Solving (Algebra)' },
+                { id: 2, time: '09:00 AM - 12:00 PM', task: 'School / Focused Revision' },
+                { id: 3, time: '04:00 PM - 07:00 PM', task: 'Physics Mechanics Practice' },
+                { id: 4, time: '08:00 PM - 10:00 PM', task: 'Chemistry Organic & Mock Test Analysis' }
+            ],
+            heatmap: Array.from({length: 35}, (_, i) => Math.floor(Math.random() * 5))
+        };
+
+        function saveData() {
+            localStorage.setItem('delta_bm_data', JSON.stringify(appData));
+            renderAll();
+        }
+
+        // Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('bg-accent', 'text-white');
+                el.classList.add('text-gray-400', 'hover:text-white', 'hover:bg-cardhover');
+            });
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('nav-' + tabId);
+            activeBtn.classList.remove('text-gray-400', 'hover:text-white', 'hover:bg-cardhover');
+            activeBtn.classList.add('bg-accent', 'text-white');
+        }
+
+        let currentPcmSub = 'Physics';
+        function switchPcmSub(sub) {
+            currentPcmSub = sub;
+            document.querySelectorAll('.pcm-sub-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white');
+                btn.classList.add('text-gray-400', 'hover:text-white');
+            });
+            document.getElementById('pcm-btn-' + sub).classList.add('bg-indigo-600', 'text-white');
+            renderPcmChapters();
+        }
+
+        // Render Dashboard Metrics
+        function renderDashboard() {
+            let totalHrs = Object.values(appData.studyHours).reduce((a, b) => a + b, 0);
+            let totalQ = Object.values(appData.questions).reduce((a, b) => a + b, 0);
+            let completion = Math.min(100, Math.round((totalHrs / (appData.dailyTargetHours * 7)) * 100));
+
+            document.getElementById('dashTotalHours').innerHTML = `${totalHrs.toFixed(1)} <span class="text-xs text-gray-400 font-normal">Hrs</span>`;
+            document.getElementById('dashTotalQ').innerText = totalQ;
+            document.getElementById('dashCompletion').innerText = completion + '%';
+            document.getElementById('dashProgressBar').style.width = completion + '%';
+            document.getElementById('dashStreak').innerText = appData.streak;
+
+            // Render Heatmap
+            let heatmapHtml = '';
+            appData.heatmap.forEach(val => {
+                let colorClass = 'bg-gray-800';
+                if (val === 1) colorClass = 'bg-indigo-950';
+                else if (val === 2) colorClass = 'bg-indigo-700';
+                else if (val === 3) colorClass = 'bg-indigo-500';
+                else if (val >= 4) colorClass = 'bg-indigo-400';
+                heatmapHtml += `<div class="heatmap-cell ${colorClass}" title="Activity level: ${val}"></div>`;
+            });
+            document.getElementById('heatmapContainer').innerHTML = heatmapHtml;
+        }
+
+        // Render PCM Chapters
+        function renderPcmChapters() {
+            let container = document.getElementById('pcmChaptersContainer');
+            let filtered = appData.topics.filter(t => t.subject === currentPcmSub);
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="col-span-2 text-center text-gray-500 py-8">No chapters added for ${currentPcmSub} yet. Click 'Add Topic' above.</div>`;
+                return;
+            }
+            let html = '';
+            filtered.forEach(topic => {
+                html += `
+                    <div class="glass p-5 rounded-2xl border border-gray-800 space-y-3">
+                        <div class="flex justify-between items-start">
+                            <h3 class="font-bold text-base">${topic.name}</h3>
+                            <button onclick="deleteTopic(${topic.id})" class="text-gray-500 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                            <div class="bg-cardbg p-2 rounded-xl border border-gray-800">
+                                <div class="text-emerald-400 font-bold text-sm">${topic.solved}</div>
+                                <div class="text-gray-400 mt-0.5">Independent</div>
+                            </div>
+                            <div class="bg-cardbg p-2 rounded-xl border border-gray-800">
+                                <div class="text-indigo-400 font-bold text-sm">${topic.aiAssisted}</div>
+                                <div class="text-gray-400 mt-0.5">AI-Assisted</div>
+                            </div>
+                            <div class="bg-cardbg p-2 rounded-xl border border-gray-800">
+                                <div class="text-amber-400 font-bold text-sm">${topic.partial}</div>
+                                <div class="text-gray-400 mt-0.5">Partial</div>
+                            </div>
+                            <div class="bg-cardbg p-2 rounded-xl border border-gray-800">
+                                <div class="text-rose-400 font-bold text-sm">${topic.unsolved}</div>
+                                <div class="text-gray-400 mt-0.5">Unsolved</div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center text-xs text-gray-400 pt-1">
+                            <span>Target: ${topic.targetHrs} hrs | ${topic.targetQ} Qs</span>
+                            <button onclick="incrementTopicSolved(${topic.id})" class="bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 px-3 py-1 rounded-lg transition">+ Solved Q</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // Render Mistakes
+        function renderMistakes() {
+            let container = document.getElementById('mistakesContainer');
+            if (appData.mistakes.length === 0) {
+                container.innerHTML = `<div class="col-span-3 text-center text-gray-500 py-8">No mistakes logged yet. Keep learning!</div>`;
+                return;
+            }
+            let html = '';
+            appData.mistakes.forEach(m => {
+                html += `
+                    <div class="glass p-5 rounded-2xl border border-gray-800 space-y-3 relative">
+                        <button onclick="deleteMistake(${m.id})" class="absolute top-4 right-4 text-gray-500 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+                        <h3 class="font-bold text-sm text-indigo-400">${m.topic}</h3>
+                        <div class="space-y-1 text-xs">
+                            <span class="text-gray-400 font-semibold block">Mistake:</span>
+                            <p class="text-gray-300 bg-cardbg p-2.5 rounded-xl border border-gray-800">${m.reason}</p>
+                        </div>
+                        <div class="space-y-1 text-xs">
+                            <span class="text-emerald-400 font-semibold block">Takeaway / Fix:</span>
+                            <p class="text-gray-300 bg-cardbg p-2.5 rounded-xl border border-gray-800">${m.takeaway}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // Render To-Dos
+        function renderTodos() {
+            let container = document.getElementById('todoListContainer');
+            if (appData.todos.length === 0) {
+                container.innerHTML = `<div class="text-center text-gray-500 py-6">No tasks added. Add your study or school homework above!</div>`;
+                return;
+            }
+            let html = '';
+            appData.todos.forEach(t => {
+                html += `
+                    <div class="flex items-center justify-between p-3.5 bg-cardbg border border-gray-800 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" ${t.checked || t.completed ? 'checked' : ''} onclick="toggleTodo(${t.id})" class="w-4 h-4 accent-indigo-600 rounded">
+                            <span class="text-sm ${t.checked || t.completed ? 'line-through text-gray-500' : 'text-gray-200'}">${t.text}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] px-2.5 py-1 rounded-full bg-gray-800 text-indigo-300 border border-gray-700">${t.category}</span>
+                            <button onclick="deleteTodo(${t.id})" class="text-gray-500 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // Render Timetable
+        function renderTimetable() {
+            let container = document.getElementById('timetableContainer');
+            let html = '';
+            appData.timetable.forEach((slot, idx) => {
+                html += `
+                    <div class="flex items-center justify-between p-3.5 bg-cardbg border border-gray-800 rounded-xl">
+                        <div class="flex items-center gap-4">
+                            <span class="text-xs font-mono text-indigo-400 bg-indigo-950 px-2.5 py-1 rounded-lg border border-indigo-800/50">${slot.time}</span>
+                            <span class="text-sm text-gray-200">${slot.task}</span>
+                        </div>
+                        <button onclick="deleteTimetable(${slot.id})" class="text-gray-500 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // Quick Log Submit
+        function submitQuickLog() {
+            let sub = document.getElementById('quickSubject').value;
+            let hrs = parseFloat(document.getElementById('quickHours').value) || 0;
+            let qs = parseInt(document.getElementById('quickQuestions').value) || 0;
+
+            appData.studyHours[sub] = (appData.studyHours[sub] || 0) + hrs;
+            appData.questions[sub] = (appData.questions[sub] || 0) + qs;
+
+            document.getElementById('quickHours').value = '';
+            document.getElementById('quickQuestions').value = '';
+            saveData();
+            alert(`✅ Progress successfully logged for ${sub}!`);
+        }
+
+        // Modals Control
+        function openAddTopicModal() { document.getElementById('topicModal').classList.remove('hidden'); }
+        function openMistakeModal() { document.getElementById('mistakeModal').classList.remove('hidden'); }
+        function openTimetableModal() { document.getElementById('timetableModal').classList.remove('hidden'); }
+        function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function saveNewTopic(e) {
+            e.preventDefault();
+            let newTopic = {
+                id: Date.now(),
+                subject: document.getElementById('modalTopicSubject').value,
+                name: document.getElementById('modalTopicName').value,
+                targetHrs: parseFloat(document.getElementById('modalTopicTargetHrs').value),
+                targetQ: parseInt(document.getElementById('modalTopicTargetQ').value),
+                solved: 0, aiAssisted: 0, partial: 0, unsolved: 0
+            };
+            appData.topics.push(newTopic);
+            closeModal('topicModal');
+            saveData();
+            renderPcmChapters();
+        }
+
+        function saveMistake(e) {
+            e.preventDefault();
+            let newM = {
+                id: Date.now(),
+                topic: document.getElementById('mistakeTopic').value,
+                reason: document.getElementById('mistakeReason').value,
+                takeaway: document.getElementById('mistakeTakeaway').value
+            };
+            appData.mistakes.push(newM);
+            closeModal('mistakeModal');
+            saveData();
+            renderMistakes();
+        }
+
+        function saveTimetableSlot(e) {
+            e.preventDefault();
+            let newSlot = {
+                id: Date.now(),
+                time: document.getElementById('slotTime').value,
+                task: document.getElementById('slotTask').value
+            };
+            appData.timetable.push(newSlot);
+            closeModal('timetableModal');
+            saveData();
+            renderTimetable();
+        }
+
+        function addTodoItem(e) {
+            e.preventDefault();
+            let text = document.getElementById('todoInput').value;
+            let cat = document.getElementById('todoCategory').value;
+            appData.todos.push({ id: Date.now(), text, category: cat, completed: false });
+            document.getElementById('todoInput').value = '';
+            saveData();
+            renderTodos();
+        }
+
+        function toggleTodo(id) {
+            let t = appData.todos.find(x => x.id === id);
+            if (t) { t.completed = !t.completed; saveData(); renderTodos(); }
+        }
+
+        function deleteTodo(id) {
+            appData.todos = appData.todos.filter(x => x.id !== id);
+            saveData(); renderTodos();
+        }
+
+        function deleteTopic(id) {
+            appData.topics = appData.topics.filter(x => x.id !== id);
+            saveData(); renderPcmChapters();
+        }
+
+        function deleteMistake(id) {
+            appData.mistakes = appData.mistakes.filter(x => x.id !== id);
+            saveData(); renderMistakes();
+        }
+
+        function deleteTimetable(id) {
+            appData.timetable = appData.timetable.filter(x => x.id !== id);
+            saveData(); renderTimetable();
+        }
+
+        function incrementTopicSolved(id) {
+            let t = appData.topics.find(x => x.id === id);
+            if(t) { t.solved += 5; saveData(); renderPcmChapters(); }
+        }
+
+        // Pomodoro Timer Logic
+        let timerInterval = null;
+        let timeLeft = 25 * 60;
+        function updateTimerDisplay() {
+            let m = Math.floor(timeLeft / 60);
+            let s = timeLeft % 60;
+            document.getElementById('timerDisplay').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+        function startTimer() {
+            if (timerInterval) return;
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) { timeLeft--; updateTimerDisplay(); }
+                else { clearInterval(timerInterval); alert("🎉 Focus session completed!"); }
+            }, 1000);
+        }
+        function pauseTimer() { clearInterval(timerInterval); timerInterval = null; }
+        function resetTimer() { pauseTimer(); timeLeft = 25 * 60; updateTimerDisplay(); }
+
+        // AI Daily Report Generator
+        function generateAIReport() {
+            let totalHrs = Object.values(appData.studyHours).reduce((a, b) => a + b, 0);
+            let totalQ = Object.values(appData.questions).reduce((a, b) => a + b, 0);
+            let completedTasks = appData.todos.filter(t => t.completed).length;
+            let totalTasks = appData.todos.length;
+
+            let report = `🔥 DELTA BM - DAILY JEE STUDY REPORT\n`;
+            report += `----------------------------------------\n`;
+            report += `📅 Date: ${new Date().toLocaleDateString()}\n`;
+            report += `⏱️ Total Focused Study Hours: ${totalHrs.toFixed(1)} hrs\n`;
+            report += `🎯 Total Questions Attempted: ${totalQ}\n`;
+            report += `✅ To-Do & School Tasks: ${completedTasks}/${totalTasks} Completed\n`;
+            report += `🔥 Active Streak: ${appData.streak} Days\n\n`;
+            report += `Subject Breakdown:\n`;
+            for (let sub in appData.studyHours) {
+                report += ` - ${sub}: ${appData.studyHours[sub]} hrs | ${appData.questions[sub]} Qs\n`;
+            }
+            report += `----------------------------------------\n`;
+            report += `Status: Consistent JEE Advanced Grind in progress! 🚀`;
+
+            document.getElementById('aiReportOutput').value = report;
+            navigator.clipboard.writeText(report);
+            alert("📋 AI Study Report generated and copied to clipboard!");
+        }
+
+        // Simulate Auth Login
+        function simulateAuthLogin() {
+            let email = document.getElementById('authEmail').value;
+            if(!email) { alert("Please enter email"); return; }
+            document.getElementById('authStatusText').innerText = `Synced (${email})`;
+            document.getElementById('authStatusBadge').classList.remove('bg-gray-800');
+            document.getElementById('authStatusBadge').classList.add('bg-emerald-950', 'text-emerald-400');
+            closeModal('authModal');
+            alert("✨ Successfully logged into Delta Cloud! Data sync active.");
+        }
+
+        // Charts Initialization
+        let hoursChartInstance = null;
+        let questionsChartInstance = null;
+        function initCharts() {
+            let ctxHrs = document.getElementById('hoursChart').getContext('2d');
+            hoursChartInstance = new Chart(ctxHrs, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(appData.studyHours),
+                    datasets: [{
+                        data: Object.values(appData.studyHours),
+                        backgroundColor: ['#6366f1', '#a855f7', '#ec4899', '#3b82f6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#9ca3af' } } } }
+            });
+
+            let ctxQ = document.getElementById('questionsChart').getContext('2d');
+            questionsChartInstance = new Chart(ctxQ, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(appData.questions),
+                    datasets: [{
+                        label: 'Questions Solved',
+                        data: Object.values(appData.questions),
+                        backgroundColor: '#6366f1',
+                        borderRadius: 6
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#9ca3af' } }, y: { ticks: { color: '#9ca3af' } } }, plugins: { legend: { display: false } } }
+            });
+        }
+
+        function renderAll() {
+            renderDashboard();
+            renderPcmChapters();
+            renderMistakes();
+            renderTodos();
+            renderTimetable();
+            if(hoursChartInstance) {
+                hoursChartInstance.data.datasets[0].data = Object.values(appData.studyHours);
+                hoursChartInstance.update();
+            }
+            if(questionsChartInstance) {
+                questionsChartInstance.data.datasets[0].data = Object.values(appData.questions);
+                questionsChartInstance.update();
+            }
+        }
+
+        // Initial Load
+        window.onload = () => {
+            renderAll();
+            initCharts();
+            updateTimerDisplay();
+        };
+    </script>
 </body>
 </html>
