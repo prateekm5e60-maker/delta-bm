@@ -277,4 +277,656 @@
                 <!-- Charts -->
                 <div class="glass p-6 rounded-2xl border border-gray-800 space-y-4">
                     <h2 class="text-lg font-bold">Subject Study Hours Comparison</h2>
-                    <div class="h-
+                    <div class="h-64 flex items-center justify-center">
+                        <canvas id="hoursChart"></canvas>
+                    </div>
+                </div>
+                <div class="glass p-6 rounded-2xl border border-gray-800 space-y-4">
+                    <h2 class="text-lg font-bold">Questions Practiced by Subject</h2>
+                    <div class="h-64 flex items-center justify-center">
+                        <canvas id="questionsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Study Report Generator -->
+            <div class="glass p-6 rounded-2xl border border-gray-800 space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles text-accent"></i> AI Daily Study Report Generator</h2>
+                        <p class="text-xs text-gray-400">Generates a neat structured summary of your daily performance to share with mentors or save as a journal.</p>
+                    </div>
+                    <button onclick="generateAIReport()" class="bg-indigo-600 hover:bg-indigo-700 px-5 py-2.5 rounded-xl font-semibold text-sm transition flex items-center gap-2 shadow-lg shadow-indigo-600/20">
+                        <i class="fa-solid fa-copy"></i> Copy AI Report
+                    </button>
+                </div>
+                <textarea id="aiReportOutput" readonly rows="6" class="w-full bg-cardbg border border-gray-700 rounded-xl p-4 text-sm font-mono focus:outline-none text-gray-300" placeholder="Click 'Copy AI Report' to instantly generate and copy your study log..."></textarea>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- MODALS -->
+    <!-- Add Topic Modal -->
+    <div id="topicModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass bg-cardbg p-6 rounded-2xl border border-gray-800 w-full max-w-md space-y-4">
+            <h3 class="text-lg font-bold">Add Chapter / Topic</h3>
+            <form onsubmit="saveNewTopic(event)" class="space-y-3">
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">Subject</label>
+                    <select id="modalTopicSubject" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm">
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Maths">Mathematics</option>
+                        <option value="Custom">School / Custom</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">Chapter Name</label>
+                    <input type="text" id="modalTopicName" placeholder="e.g. Electrostatics, Calculus" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm" required>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-gray-400 block mb-1">Target Hours</label>
+                        <input type="number" id="modalTopicTargetHrs" step="0.5" inputmode="decimal" value="5" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 block mb-1">Target Questions</label>
+                        <input type="number" id="modalTopicTargetQ" inputmode="numeric" value="50" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 mt-4">
+                    <button type="button" onclick="closeModal('topicModal')" class="px-4 py-2 rounded-xl text-sm bg-gray-800 hover:bg-gray-700">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-sm bg-accent hover:bg-accenthover font-semibold">Save Topic</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mistake Log Modal -->
+    <div id="mistakeModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass bg-cardbg p-6 rounded-2xl border border-gray-800 w-full max-w-md space-y-4">
+            <h3 class="text-lg font-bold">Log Wrong Question / Mistake</h3>
+            <form onsubmit="saveMistake(event)" class="space-y-3">
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">Subject & Topic</label>
+                    <input type="text" id="mistakeTopic" placeholder="e.g. Physics - Rotational Motion" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm" required>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">What was the mistake?</label>
+                    <textarea id="mistakeReason" rows="2" placeholder="Calculation error, conceptual gap, misread question..." class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm" required></textarea>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">Correct Concept / Takeaway</label>
+                    <textarea id="mistakeTakeaway" rows="2" placeholder="Formula application rule..." class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm" required></textarea>
+                </div>
+                <div class="flex justify-end gap-3 mt-4">
+                    <button type="button" onclick="closeModal('mistakeModal')" class="px-4 py-2 rounded-xl text-sm bg-gray-800 hover:bg-gray-700">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-sm bg-accent hover:bg-accenthover font-semibold">Log Mistake</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Timetable Slot Modal -->
+    <div id="timetableModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass bg-cardbg p-6 rounded-2xl border border-gray-800 w-full max-w-md space-y-4">
+            <h3 class="text-lg font-bold">Add Timetable Slot</h3>
+            <form onsubmit="saveTimetableSlot(event)" class="space-y-3">
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">Time Slot</label>
+                    <input type="text" id="slotTime" placeholder="e.g. 06:00 AM - 08:00 AM" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm" required>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">Activity / Task</label>
+                    <input type="text" id="slotTask" placeholder="e.g. Physics Problem Solving (Irodov)" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm" required>
+                </div>
+                <div class="flex justify-end gap-3 mt-4">
+                    <button type="button" onclick="closeModal('timetableModal')" class="px-4 py-2 rounded-xl text-sm bg-gray-800 hover:bg-gray-700">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-sm bg-accent hover:bg-accenthover font-semibold">Add Slot</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass bg-cardbg p-6 rounded-2xl border border-gray-800 w-full max-w-md space-y-4">
+            <h3 class="text-lg font-bold" id="authModalTitle">Firebase Cloud Sync Login</h3>
+            <p class="text-xs text-gray-400">Connect Firebase to sync your JEE preparation across your laptop and Android phone.</p>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">Email</label>
+                    <input type="email" id="authEmail" placeholder="student@jee.com" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">Password</label>
+                    <input type="password" id="authPassword" placeholder="••••••••" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm">
+                </div>
+                <div class="flex flex-col gap-2 pt-2">
+                    <button onclick="simulateAuthLogin()" class="w-full bg-accent hover:bg-accenthover py-2.5 rounded-xl text-sm font-semibold transition">Login / Signup</button>
+                    <button onclick="closeModal('authModal')" class="w-full bg-gray-800 hover:bg-gray-700 py-2.5 rounded-xl text-sm transition">Continue as Guest</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Firebase Configuration Setup
+        const firebaseConfig = {
+            apiKey: "AIzaSyCL6H1eMDs_yuT1nEjP_eXlW9YtGQZlXtQ",
+            authDomain: "my-jee-tracker-54a89.firebaseapp.com",
+            projectId: "my-jee-tracker-54a89",
+            storageBucket: "my-jee-tracker-54a89.firebasestorage.app",
+            messagingSenderId: "657294579911",
+            appId: "1:657294579911:web:79814671383eb3126f86e2",
+            measurementId: "G-D7XXL5WZ6G"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let currentUserUid = null;
+
+        // State Management
+        let appData = {
+            studyHours: { Physics: 3.5, Chemistry: 2.0, Maths: 4.0, Custom: 1.5 },
+            questions: { Physics: 45, Chemistry: 30, Maths: 50, Custom: 10 },
+            dailyTargetHours: 8,
+            dailyTargetQ: 120,
+            streak: 5,
+            topics: [
+                { id: 1, subject: 'Physics', name: 'Mechanics & Rotational Dynamics', targetHrs: 6, targetQ: 60, solved: 40, aiAssisted: 10, partial: 5, unsolved: 5 },
+                { id: 2, subject: 'Chemistry', name: 'Organic Reaction Mechanisms', targetHrs: 5, targetQ: 50, solved: 35, aiAssisted: 5, partial: 7, unsolved: 3 },
+                { id: 3, subject: 'Maths', name: 'Calculus & Definite Integration', targetHrs: 7, targetQ: 70, solved: 50, aiAssisted: 8, partial: 7, unsolved: 5 }
+            ],
+            mistakes: [
+                { id: 1, topic: 'Physics - Circular Motion', reason: 'Forgot pseudo force in non-inertial rotating frame', takeaway: 'Always draw centrifugal force outward in rotating frame.' }
+            ],
+            todos: [
+                { id: 1, text: 'Revise JEE Calculus Formulae', category: 'JEE Study', completed: true },
+                { id: 2, text: 'Complete Chemistry Practical File', category: 'School HW', completed: false },
+                { id: 3, text: 'CS Python Project Documentation', category: 'English/CS', completed: false }
+            ],
+            timetable: [
+                { id: 1, time: '06:00 AM - 08:00 AM', task: 'Maths Problem Solving (Algebra)' },
+                { id: 2, time: '09:00 AM - 12:00 PM', task: 'School / Focused Revision' },
+                { id: 3, time: '04:00 PM - 07:00 PM', task: 'Physics Mechanics Practice' },
+                { id: 4, time: '08:00 PM - 10:00 PM', task: 'Chemistry Organic & Mock Test Analysis' }
+            ],
+            heatmap: Array.from({length: 35}, (_, i) => Math.floor(Math.random() * 5))
+        };
+
+        function saveData() {
+            if (currentUserUid) {
+                db.collection("users").doc(currentUserUid).set(appData)
+                  .catch(err => console.error("Cloud sync error: ", err));
+            } else {
+                localStorage.setItem('delta_bm_data', JSON.stringify(appData));
+            }
+            renderAll();
+        }
+
+        function loadUserData(uid) {
+            currentUserUid = uid;
+            db.collection("users").doc(uid).get().then((doc) => {
+                if (doc.exists) {
+                    appData = doc.data();
+                } else {
+                    db.collection("users").doc(uid).set(appData);
+                }
+                renderAll();
+            });
+        }
+
+        // Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('bg-accent', 'text-white');
+                el.classList.add('text-gray-400', 'hover:text-white', 'hover:bg-cardhover');
+            });
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('nav-' + tabId);
+            activeBtn.classList.remove('text-gray-400', 'hover:text-white', 'hover:bg-cardhover');
+            activeBtn.classList.add('bg-accent', 'text-white');
+        }
+
+        let currentPcmSub = 'Physics';
+        function switchPcmSub(sub) {
+            currentPcmSub = sub;
+            document.querySelectorAll('.pcm-sub-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white');
+                btn.classList.add('text-gray-400', 'hover:text-white');
+            });
+            document.getElementById('pcm-btn-' + sub).classList.add('bg-indigo-600', 'text-white');
+            renderPcmChapters();
+        }
+
+        // Render Dashboard Metrics
+        function renderDashboard() {
+            let totalHrs = Object.values(appData.studyHours).reduce((a, b) => a + b, 0);
+            let totalQ = Object.values(appData.questions).reduce((a, b) => a + b, 0);
+            let completion = Math.min(100, Math.round((totalHrs / (appData.dailyTargetHours * 7)) * 100));
+
+            document.getElementById('dashTotalHours').innerHTML = `${totalHrs.toFixed(1)} <span class="text-xs text-gray-400 font-normal">Hrs</span>`;
+            document.getElementById('dashTotalQ').innerText = totalQ;
+            document.getElementById('dashCompletion').innerText = completion + '%';
+            document.getElementById('dashProgressBar').style.width = completion + '%';
+            document.getElementById('dashStreak').innerText = appData.streak;
+
+            // Render Heatmap
+            let heatmapHtml = '';
+            appData.heatmap.forEach(val => {
+                let colorClass = 'bg-gray-800';
+                if (val === 1) colorClass = 'bg-indigo-950';
+                else if (val === 2) colorClass = 'bg-indigo-700';
+                else if (val === 3) colorClass = 'bg-indigo-500';
+                else if (val >= 4) colorClass = 'bg-indigo-400';
+                heatmapHtml += `<div class="heatmap-cell ${colorClass}" title="Activity level: ${val}"></div>`;
+            });
+            document.getElementById('heatmapContainer').innerHTML = heatmapHtml;
+        }
+
+        // Render PCM Chapters
+        function renderPcmChapters() {
+            let container = document.getElementById('pcmChaptersContainer');
+            let filtered = appData.topics.filter(t => t.subject === currentPcmSub);
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="col-span-2 text-center text-gray-500 py-8">No chapters added for ${currentPcmSub} yet. Click 'Add Topic' above.</div>`;
+                return;
+            }
+            let html = '';
+            filtered.forEach(topic => {
+                html += `
+                    <div class="glass p-5 rounded-2xl border border-gray-800 space-y-3">
+                        <div class="flex justify-between items-start">
+                            <h3 class="font-bold text-base">${topic.name}</h3>
+                            <button onclick="deleteTopic(${topic.id})" class="text-gray-500 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                            <div class="bg-cardbg p-2 rounded-xl border border-gray-800">
+                                <div class="text-emerald-400 font-bold text-sm">${topic.solved}</div>
+                                <div class="text-gray-400 mt-0.5">Independent</div>
+                            </div>
+                            <div class="bg-cardbg p-2 rounded-xl border border-gray-800">
+                                <div class="text-indigo-400 font-bold text-sm">${topic.aiAssisted}</div>
+                                <div class="text-gray-400 mt-0.5">AI-Assisted</div>
+                            </div>
+                            <div class="bg-cardbg p-2 rounded-xl border border-gray-800">
+                                <div class="text-amber-400 font-bold text-sm">${topic.partial}</div>
+                                <div class="text-gray-400 mt-0.5">Partial</div>
+                            </div>
+                            <div class="bg-cardbg p-2 rounded-xl border border-gray-800">
+                                <div class="text-rose-400 font-bold text-sm">${topic.unsolved}</div>
+                                <div class="text-gray-400 mt-0.5">Unsolved</div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center text-xs text-gray-400 pt-1">
+                            <span>Target: ${topic.targetHrs} hrs | ${topic.targetQ} Qs</span>
+                            <button onclick="updateTopicQuestions(${topic.id})" class="bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 px-3 py-1 rounded-lg transition">+ Update Qs</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // Render Mistakes
+        function renderMistakes() {
+            let container = document.getElementById('mistakesContainer');
+            if (appData.mistakes.length === 0) {
+                container.innerHTML = `<div class="col-span-3 text-center text-gray-500 py-8">No mistakes logged yet. Keep learning!</div>`;
+                return;
+            }
+            let html = '';
+            appData.mistakes.forEach(m => {
+                html += `
+                    <div class="glass p-5 rounded-2xl border border-gray-800 space-y-3 relative">
+                        <button onclick="deleteMistake(${m.id})" class="absolute top-4 right-4 text-gray-500 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+                        <h3 class="font-bold text-sm text-indigo-400">${m.topic}</h3>
+                        <div class="space-y-1 text-xs">
+                            <span class="text-gray-400 font-semibold block">Mistake:</span>
+                            <p class="text-gray-300 bg-cardbg p-2.5 rounded-xl border border-gray-800">${m.reason}</p>
+                        </div>
+                        <div class="space-y-1 text-xs">
+                            <span class="text-emerald-400 font-semibold block">Takeaway / Fix:</span>
+                            <p class="text-gray-300 bg-cardbg p-2.5 rounded-xl border border-gray-800">${m.takeaway}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // Render To-Dos
+        function renderTodos() {
+            let container = document.getElementById('todoListContainer');
+            if (appData.todos.length === 0) {
+                container.innerHTML = `<div class="text-center text-gray-500 py-6">No tasks added. Add your study or school homework above!</div>`;
+                return;
+            }
+            let html = '';
+            appData.todos.forEach(t => {
+                html += `
+                    <div class="flex items-center justify-between p-3.5 bg-cardbg border border-gray-800 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" ${t.checked || t.completed ? 'checked' : ''} onclick="toggleTodo(${t.id})" class="w-4 h-4 accent-indigo-600 rounded">
+                            <span class="text-sm ${t.checked || t.completed ? 'line-through text-gray-500' : 'text-gray-200'}">${t.text}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] px-2.5 py-1 rounded-full bg-gray-800 text-indigo-300 border border-gray-700">${t.category}</span>
+                            <button onclick="deleteTodo(${t.id})" class="text-gray-500 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // Render Timetable
+        function renderTimetable() {
+            let container = document.getElementById('timetableContainer');
+            let html = '';
+            appData.timetable.forEach((slot, idx) => {
+                html += `
+                    <div class="flex items-center justify-between p-3.5 bg-cardbg border border-gray-800 rounded-xl">
+                        <div class="flex items-center gap-4">
+                            <span class="text-xs font-mono text-indigo-400 bg-indigo-950 px-2.5 py-1 rounded-lg border border-indigo-800/50">${slot.time}</span>
+                            <span class="text-sm text-gray-200">${slot.task}</span>
+                        </div>
+                        <button onclick="deleteTimetable(${slot.id})" class="text-gray-500 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // Quick Log Submit
+        function submitQuickLog() {
+            let sub = document.getElementById('quickSubject').value;
+            let hrs = parseFloat(document.getElementById('quickHours').value) || 0;
+            let qs = parseInt(document.getElementById('quickQuestions').value) || 0;
+
+            appData.studyHours[sub] = (appData.studyHours[sub] || 0) + hrs;
+            appData.questions[sub] = (appData.questions[sub] || 0) + qs;
+
+            document.getElementById('quickHours').value = '';
+            document.getElementById('quickQuestions').value = '';
+            saveData();
+            alert(`✅ Progress successfully logged for ${sub}!`);
+        }
+
+        // Reset Today's Progress
+        function resetTodayProgress() {
+            if (confirm("⚠️ Kya aap aaj ke study hours aur questions ko reset karke 0 karna chahte hain?")) {
+                for (let sub in appData.studyHours) {
+                    appData.studyHours[sub] = 0;
+                }
+                for (let sub in appData.questions) {
+                    appData.questions[sub] = 0;
+                }
+                saveData();
+                alert("🔄 Aaj ka progress reset ho gaya hai!");
+            }
+        }
+
+        // Modals Control
+        function openAddTopicModal() { document.getElementById('topicModal').classList.remove('hidden'); }
+        function openMistakeModal() { 
+            let modal = document.getElementById('mistakeModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                let firstInput = document.getElementById('mistakeTopic');
+                if(firstInput) firstInput.focus();
+            }, 100);
+        }
+        function openTimetableModal() { document.getElementById('timetableModal').classList.remove('hidden'); }
+        function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function saveNewTopic(e) {
+            e.preventDefault();
+            let newTopic = {
+                id: Date.now(),
+                subject: document.getElementById('modalTopicSubject').value,
+                name: document.getElementById('modalTopicName').value,
+                targetHrs: parseFloat(document.getElementById('modalTopicTargetHrs').value) || 0,
+                targetQ: parseInt(document.getElementById('modalTopicTargetQ').value) || 0,
+                solved: 0, aiAssisted: 0, partial: 0, unsolved: 0
+            };
+            appData.topics.push(newTopic);
+            closeModal('topicModal');
+            saveData();
+            renderPcmChapters();
+        }
+
+        function updateTopicQuestions(id) {
+            let t = appData.topics.find(x => x.id === id);
+            if (!t) return;
+            let input = prompt(`Enter solved questions for ${t.name}:`, t.solved);
+            if (input !== null) {
+                let val = parseInt(input);
+                if (!isNaN(val)) {
+                    t.solved = val;
+                    saveData();
+                }
+            }
+        }
+
+        function saveMistake(e) {
+            e.preventDefault();
+            let newM = {
+                id: Date.now(),
+                topic: document.getElementById('mistakeTopic').value,
+                reason: document.getElementById('mistakeReason').value,
+                takeaway: document.getElementById('mistakeTakeaway').value
+            };
+            appData.mistakes.push(newM);
+            closeModal('mistakeModal');
+            saveData();
+            renderMistakes();
+        }
+
+        function saveTimetableSlot(e) {
+            e.preventDefault();
+            let newSlot = {
+                id: Date.now(),
+                time: document.getElementById('slotTime').value,
+                task: document.getElementById('slotTask').value
+            };
+            appData.timetable.push(newSlot);
+            closeModal('timetableModal');
+            saveData();
+            renderTimetable();
+        }
+
+        function addTodoItem(e) {
+            e.preventDefault();
+            let text = document.getElementById('todoInput').value;
+            let cat = document.getElementById('todoCategory').value;
+            appData.todos.push({ id: Date.now(), text, category: cat, completed: false });
+            document.getElementById('todoInput').value = '';
+            saveData();
+            renderTodos();
+        }
+
+        function toggleTodo(id) {
+            let t = appData.todos.find(x => x.id === id);
+            if (t) { t.completed = !t.completed; saveData(); renderTodos(); }
+        }
+
+        function deleteTodo(id) {
+            appData.todos = appData.todos.filter(x => x.id !== id);
+            saveData(); renderTodos();
+        }
+
+        function deleteTopic(id) {
+            appData.topics = appData.topics.filter(x => x.id !== id);
+            saveData(); renderPcmChapters();
+        }
+
+        function deleteMistake(id) {
+            appData.mistakes = appData.mistakes.filter(x => x.id !== id);
+            saveData(); renderMistakes();
+        }
+
+        function deleteTimetable(id) {
+            appData.timetable = appData.timetable.filter(x => x.id !== id);
+            saveData(); renderTimetable();
+        }
+
+        // Pomodoro Timer Logic
+        let timerInterval = null;
+        let timeLeft = 25 * 60;
+        function updateTimerDisplay() {
+            let m = Math.floor(timeLeft / 60);
+            let s = timeLeft % 60;
+            document.getElementById('timerDisplay').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+        function startTimer() {
+            if (timerInterval) return;
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) { timeLeft--; updateTimerDisplay(); }
+                else { clearInterval(timerInterval); alert("🎉 Focus session completed!"); }
+            }, 1000);
+        }
+        function pauseTimer() { clearInterval(timerInterval); timerInterval = null; }
+        function resetTimer() { pauseTimer(); timeLeft = 25 * 60; updateTimerDisplay(); }
+
+        // AI Daily Report Generator
+        function generateAIReport() {
+            let totalHrs = Object.values(appData.studyHours).reduce((a, b) => a + b, 0);
+            let totalQ = Object.values(appData.questions).reduce((a, b) => a + b, 0);
+            let completedTasks = appData.todos.filter(t => t.completed).length;
+            let totalTasks = appData.todos.length;
+
+            let report = `🔥 DELTA BM - DAILY JEE STUDY REPORT\n`;
+            report += `----------------------------------------\n`;
+            report += `📅 Date: ${new Date().toLocaleDateString()}\n`;
+            report += `⏱️ Total Focused Study Hours: ${totalHrs.toFixed(1)} hrs\n`;
+            report += `🎯 Total Questions Attempted: ${totalQ}\n`;
+            report += `✅ To-Do & School Tasks: ${completedTasks}/${totalTasks} Completed\n`;
+            report += `🔥 Active Streak: ${appData.streak} Days\n\n`;
+            report += `Subject Breakdown:\n`;
+            for (let sub in appData.studyHours) {
+                report += ` - ${sub}: ${appData.studyHours[sub]} hrs | ${appData.questions[sub]} Qs\n`;
+            }
+            report += `----------------------------------------\n`;
+            report += `Status: Consistent JEE Advanced Grind in progress! 🚀`;
+
+            document.getElementById('aiReportOutput').value = report;
+            navigator.clipboard.writeText(report);
+            alert("📋 AI Study Report generated and copied to clipboard!");
+        }
+
+        // Real Firebase Auth Login / Signup
+        function simulateAuthLogin() {
+            let email = document.getElementById('authEmail').value;
+            let password = document.getElementById('authPassword').value;
+            if(!email || !password) { alert("Please enter email and password"); return; }
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    let user = userCredential.user;
+                    document.getElementById('authStatusText').innerText = `Synced (${email})`;
+                    document.getElementById('authStatusBadge').classList.remove('bg-gray-800');
+                    document.getElementById('authStatusBadge').classList.add('bg-emerald-950', 'text-emerald-400');
+                    closeModal('authModal');
+                    switchTab('dashboard');
+                    loadUserData(user.uid);
+                    alert("✨ Successfully logged into Firebase Cloud!");
+                })
+                .catch((error) => {
+                    auth.createUserWithEmailAndPassword(email, password)
+                        .then((userCredential) => {
+                            let user = userCredential.user;
+                            document.getElementById('authStatusText').innerText = `Synced (${email})`;
+                            document.getElementById('authStatusBadge').classList.remove('bg-gray-800');
+                            document.getElementById('authStatusBadge').classList.add('bg-emerald-950', 'text-emerald-400');
+                            closeModal('authModal');
+                            switchTab('dashboard');
+                            loadUserData(user.uid);
+                            alert("✨ New Firebase account created & logged in successfully!");
+                        })
+                        .catch((err) => {
+                            alert("Error: " + err.message);
+                        });
+                });
+        }
+
+        // Charts Initialization
+        let hoursChartInstance = null;
+        let questionsChartInstance = null;
+        function initCharts() {
+            let ctxHrs = document.getElementById('hoursChart').getContext('2d');
+            hoursChartInstance = new Chart(ctxHrs, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(appData.studyHours),
+                    datasets: [{
+                        data: Object.values(appData.studyHours),
+                        backgroundColor: ['#6366f1', '#a855f7', '#ec4899', '#3b82f6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#9ca3af' } } } }
+            });
+
+            let ctxQ = document.getElementById('questionsChart').getContext('2d');
+            questionsChartInstance = new Chart(ctxQ, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(appData.questions),
+                    datasets: [{
+                        label: 'Questions Solved',
+                        data: Object.values(appData.questions),
+                        backgroundColor: '#6366f1',
+                        borderRadius: 6
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#9ca3af' } }, y: { ticks: { color: '#9ca3af' } } }, plugins: { legend: { display: false } } }
+            });
+        }
+
+        function renderAll() {
+            renderDashboard();
+            renderPcmChapters();
+            renderMistakes();
+            renderTodos();
+            renderTimetable();
+            if(hoursChartInstance) {
+                hoursChartInstance.data.datasets[0].data = Object.values(appData.studyHours);
+                hoursChartInstance.update();
+            }
+            if(questionsChartInstance) {
+                questionsChartInstance.data.datasets[0].data = Object.values(appData.questions);
+                questionsChartInstance.update();
+            }
+        }
+
+        // Initial Load & Auth State Observer
+        window.onload = () => {
+            initCharts();
+            updateTimerDisplay();
+
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    document.getElementById('authStatusText').innerText = `Synced (${user.email})`;
+                    document.getElementById('authStatusBadge').classList.remove('bg-gray-800');
+                    document.getElementById('authStatusBadge').classList.add('bg-emerald-950', 'text-emerald-400');
+                    loadUserData(user.uid);
+                } else {
+                    let localSaved = localStorage.getItem('delta_bm_data');
+                    if (localSaved) {
+                        appData = JSON.parse(localSaved);
+                    }
+                    renderAll();
+                }
+            });
+        };
+    </script>
+</body>
+</html>
