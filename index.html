@@ -11,6 +11,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -321,7 +327,7 @@
                     </div>
                     <div>
                         <label class="text-xs text-gray-400 block mb-1">Target Questions</label>
-                        <input type="text" id="modalTopicTargetQ" value="50" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm">
+                        <input type="number" id="modalTopicTargetQ" value="50" inputmode="numeric" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm">
                     </div>
                 </div>
                 <div class="flex justify-end gap-3 mt-4">
@@ -402,8 +408,25 @@
 
     <!-- JavaScript Application Logic -->
     <script>
+        // Firebase Configuration Setup
+        const firebaseConfig = {
+            apiKey: "AIzaSyCL6H1eMDs_yuT1nEjP_eXlW9YtGQZlXtQ",
+            authDomain: "my-jee-tracker-54a89.firebaseapp.com",
+            projectId: "my-jee-tracker-54a89",
+            storageBucket: "my-jee-tracker-54a89.firebasestorage.app",
+            messagingSenderId: "657294579911",
+            appId: "1:657294579911:web:79814671383eb3126f86e2",
+            measurementId: "G-D7XXL5WZ6G"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let currentUserUid = null;
+
         // State Management
-        let appData = JSON.parse(localStorage.getItem('delta_bm_data')) || {
+        let appData = {
             studyHours: { Physics: 3.5, Chemistry: 2.0, Maths: 4.0, Custom: 1.5 },
             questions: { Physics: 45, Chemistry: 30, Maths: 50, Custom: 10 },
             dailyTargetHours: 8,
@@ -432,8 +455,25 @@
         };
 
         function saveData() {
-            localStorage.setItem('delta_bm_data', JSON.stringify(appData));
+            if (currentUserUid) {
+                db.collection("users").doc(currentUserUid).set(appData)
+                  .catch(err => console.error("Cloud sync error: ", err));
+            } else {
+                localStorage.setItem('delta_bm_data', JSON.stringify(appData));
+            }
             renderAll();
+        }
+
+        function loadUserData(uid) {
+            currentUserUid = uid;
+            db.collection("users").doc(uid).get().then((doc) => {
+                if (doc.exists) {
+                    appData = doc.data();
+                } else {
+                    db.collection("users").doc(uid).set(appData);
+                }
+                renderAll();
+            });
         }
 
         // Tab Switching
@@ -627,8 +667,8 @@
                 id: Date.now(),
                 subject: document.getElementById('modalTopicSubject').value,
                 name: document.getElementById('modalTopicName').value,
-                targetHrs: parseFloat(document.getElementById('modalTopicTargetHrs').value),
-                targetQ: parseInt(document.getElementById('modalTopicTargetQ').value),
+                targetHrs: parseFloat(document.getElementById('modalTopicTargetHrs').value) || 0,
+                targetQ: parseInt(document.getElementById('modalTopicTargetQ').value) || 0,
                 solved: 0, aiAssisted: 0, partial: 0, unsolved: 0
             };
             appData.topics.push(newTopic);
@@ -748,16 +788,39 @@
             alert("📋 AI Study Report generated and copied to clipboard!");
         }
 
-        // Simulate Auth Login
+        // Real Firebase Auth Login / Signup
         function simulateAuthLogin() {
             let email = document.getElementById('authEmail').value;
-            if(!email) { alert("Please enter email"); return; }
-            document.getElementById('authStatusText').innerText = `Synced (${email})`;
-            document.getElementById('authStatusBadge').classList.remove('bg-gray-800');
-            document.getElementById('authStatusBadge').classList.add('bg-emerald-950', 'text-emerald-400');
-            closeModal('authModal');
-            switchTab('dashboard');
-            alert("✨ Successfully logged into Delta Cloud! Data sync active.");
+            let password = document.getElementById('authPassword').value;
+            if(!email || !password) { alert("Please enter email and password"); return; }
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    let user = userCredential.user;
+                    document.getElementById('authStatusText').innerText = `Synced (${email})`;
+                    document.getElementById('authStatusBadge').classList.remove('bg-gray-800');
+                    document.getElementById('authStatusBadge').classList.add('bg-emerald-950', 'text-emerald-400');
+                    closeModal('authModal');
+                    switchTab('dashboard');
+                    loadUserData(user.uid);
+                    alert("✨ Successfully logged into Firebase Cloud!");
+                })
+                .catch((error) => {
+                    auth.createUserWithEmailAndPassword(email, password)
+                        .then((userCredential) => {
+                            let user = userCredential.user;
+                            document.getElementById('authStatusText').innerText = `Synced (${email})`;
+                            document.getElementById('authStatusBadge').classList.remove('bg-gray-800');
+                            document.getElementById('authStatusBadge').classList.add('bg-emerald-950', 'text-emerald-400');
+                            closeModal('authModal');
+                            switchTab('dashboard');
+                            loadUserData(user.uid);
+                            alert("✨ New Firebase account created & logged in successfully!");
+                        })
+                        .catch((err) => {
+                            alert("Error: " + err.message);
+                        });
+                });
         }
 
         // Charts Initialization
@@ -810,11 +873,25 @@
             }
         }
 
-        // Initial Load
+        // Initial Load & Auth State Observer
         window.onload = () => {
-            renderAll();
             initCharts();
             updateTimerDisplay();
+
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    document.getElementById('authStatusText').innerText = `Synced (${user.email})`;
+                    document.getElementById('authStatusBadge').classList.remove('bg-gray-800');
+                    document.getElementById('authStatusBadge').classList.add('bg-emerald-950', 'text-emerald-400');
+                    loadUserData(user.uid);
+                } else {
+                    let localSaved = localStorage.getItem('delta_bm_data');
+                    if (localSaved) {
+                        appData = JSON.parse(localSaved);
+                    }
+                    renderAll();
+                }
+            });
         };
     </script>
 </body>
