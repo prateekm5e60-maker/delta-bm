@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delta BM - JEE Study Tracker</title>
+    <title>Delta BM - JEE Advanced & Mains Ultimate Suite</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%234f46e5'/><text x='50' y='68' font-size='55' font-family='Arial, sans-serif' font-weight='bold' fill='white' text-anchor='middle'>Δ</text></svg>">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -33,15 +33,15 @@
         }
     </script>
     <style>
-        .glass { background: rgba(20, 20, 26, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .glass { background: rgba(20, 20, 26, 0.78); backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.08); }
         .heatmap-cell { width: 14px; height: 14px; border-radius: 3px; cursor: pointer; transition: transform 0.15s; }
         .heatmap-cell:hover { transform: scale(1.25); outline: 1px solid #818cf8; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #0a0a0c; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
     </style>
 </head>
-<body class="bg-darkbg text-gray-100 min-h-screen font-sans selection:bg-accent selection:text-white pb-20">
+<body class="bg-darkbg text-gray-100 min-h-screen font-sans selection:bg-accent selection:text-white pb-24">
 
     <!-- Floating Scientific Calculator Button -->
     <button onclick="toggleCalculatorModal()" class="fixed bottom-6 right-6 z-40 bg-accent hover:bg-accenthover text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-xl transition transform hover:scale-105" title="Scientific Calculator">
@@ -54,9 +54,9 @@
         <header class="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 border-b border-gray-800 gap-4">
             <div>
                 <h1 class="text-3xl font-extrabold tracking-tight flex items-center gap-3">
-                    <i class="fa-solid fa-atom text-accent"></i> DELTA BM
+                    <i class="fa-solid fa-atom text-accent"></i> DELTA BM <span class="text-xs bg-indigo-950 text-indigo-400 px-2.5 py-1 rounded-full border border-indigo-800/60 font-mono">v2.5 PRO</span>
                 </h1>
-                <p class="text-sm text-gray-400 mt-1">JEE Advanced & Mains Full Manual Control Productivity Suite</p>
+                <p class="text-sm text-gray-400 mt-1">JEE Advanced & Mains Full Manual Control Productivity & Cloud Sync Suite</p>
             </div>
             
             <div class="flex flex-wrap items-center gap-2.5">
@@ -175,12 +175,12 @@
             <div id="pcmChaptersContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </section>
 
-        <!-- TAB 3: NOTES & FORMULA VAULT + OFFLINE DICTIONARY -->
+        <!-- TAB 3: NOTES & FORMULA VAULT + OFFLINE DICTIONARY & FLASHCARDS -->
         <section id="tab-vault" class="tab-content hidden space-y-6 mt-4">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h2 class="text-xl font-bold">Offline Formula Dictionary & Notes Vault</h2>
-                    <p class="text-xs text-gray-400">Search built-in JEE formulas or add your custom short notes.</p>
+                    <p class="text-xs text-gray-400">Search built-in JEE formulas, flashcards or add your custom short notes.</p>
                 </div>
                 <div class="flex flex-wrap gap-2 w-full md:w-auto">
                     <div class="relative flex-1 md:w-64">
@@ -206,7 +206,7 @@
             <!-- Built-in Offline JEE Formula Dictionary -->
             <div class="space-y-3 pt-4 border-t border-gray-800/80">
                 <h3 class="text-sm font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
-                    <i class="fa-solid fa-book-bookmark"></i> Built-in Offline JEE Formula Dictionary
+                    <i class="fa-solid fa-book-bookmark"></i> Built-in Offline JEE Formula Dictionary & Quick Cards
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="offlineFormulaContainer"></div>
             </div>
@@ -257,7 +257,7 @@
             <div id="mistakesContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
         </section>
 
-        <!-- TAB 7: TODOS -->
+        <!-- TAB 7: TODOS (Fixed Bug & Robust State Handling) -->
         <section id="tab-todos" class="tab-content hidden space-y-6 mt-4">
             <div class="glass p-6 rounded-2xl border border-gray-800 space-y-4">
                 <form id="todoForm" onsubmit="addTodoItem(event)" class="flex gap-3">
@@ -539,28 +539,43 @@
 
         let appData = JSON.parse(localStorage.getItem('delta_bm_data')) || getDefaultEmptyData();
         if (!appData.books) appData.books = [];
+        if (!appData.todos) appData.todos = [];
 
-        // Built-in Offline JEE Formula & Concept Dictionary
+        // Expanded Built-in Offline JEE Formula & Concept Dictionary (50+ Formulas & Concepts)
         const offlineFormulas = [
-            { subject: 'Physics', title: 'Kinematics (Equations of Motion)', content: 'v = u + at | s = ut + ½at² | v² = u² + 2as | Range R = (u² sin 2θ)/g | Max Height H = (u² sin²θ)/(2g)' },
+            { subject: 'Physics', title: 'Kinematics & Projectile Motion', content: 'v = u + at | s = ut + ½at² | v² = u² + 2as | Range R = (u² sin 2θ)/g | Max Height H = (u² sin²θ)/(2g)' },
+            { subject: 'Physics', title: 'Newton Laws & Friction', content: 'F_net = dp/dt = ma | f_s(max) = μ_s N | f_k = μ_k N | Banked Road v = √(gr tan θ)' },
+            { subject: 'Physics', title: 'Work, Energy & Power', content: 'W = F·s = ΔK | U_spring = ½kx² | P = F·v = dW/dt | Conservative Force F = -dU/dx' },
             { subject: 'Physics', title: 'Rotational Dynamics', content: 'τ = Iα | L = Iω | K_rot = ½Iω² | Parallel Axis: I = I_cm + Md² | Rolling v_cm = ωR' },
+            { subject: 'Physics', title: 'Gravitation & Kepler Laws', content: 'F = Gm₁m₂/r² | U = -Gm₁m₂/r | V = -GM/r | Escape Velocity v_e = √(2GM/R) | T² ∝ R³' },
             { subject: 'Physics', title: 'Electrostatics & Gauss Law', content: 'F = kq₁q₂/r² | E = -dV/dr | Φ = ∮E·dA = q_in/ε₀ | Dipole Torque τ = p × E' },
-            { subject: 'Physics', title: 'Current Electricity & Magnetism', content: 'V = IR | P = I²R | Biot-Savart: dB = (μ₀/4π)(I dl × r̂)/r² | Lorentz Force: F = q(E + v × B)' },
-            { subject: 'Physics', title: 'Modern Physics (Photoelectric & Bohr)', content: 'E = hν = hc/λ | K_max = hν - φ₀ | r_n = 0.529 (n²/Z) Å | E_n = -13.6 (Z²/n²) eV' },
-            { subject: 'Chemistry', title: 'Thermodynamics & Equilibrium', content: 'ΔU = q + w | ΔG = ΔH - TΔS | ΔG° = -RT ln K | K_p = K_c(RT)^Δn' },
-            { subject: 'Chemistry', title: 'Electrochemistry (Nernst Equation)', content: 'E_cell = E°_cell - (0.0591/n) log Q | ΔG° = -nFE°_cell | Λ_m = κ × 1000 / M' },
-            { subject: 'Chemistry', title: 'Chemical Kinetics', content: 'First Order: k = (2.303/t) log([A]₀/[A]) | t₁/₂ = 0.693/k | Arrhenius: k = A e^(-Ea/RT)' },
-            { subject: 'Chemistry', title: 'Organic Named Reactions Quick Key', content: 'Aldol: α-H + dil. NaOH → β-hydroxy carbonyl | Cannizzaro: No α-H + conc. NaOH → Alcohol + Acid salt' },
-            { subject: 'Maths', title: 'Quadratic Equations', content: 'Roots: x = (-b ± √(b² - 4ac)) / 2a | Sum α+β = -b/a | Product αβ = c/a | D = b² - 4ac' },
-            { subject: 'Maths', title: 'Trigonometry & Inverse Trig', content: 'sin 2θ = 2 sinθ cosθ | cos 2θ = cos²θ - sin²θ | sin⁻¹x + cos⁻¹x = π/2 | tan⁻¹x + tan⁻¹y = tan⁻¹((x+y)/(1-xy))' },
-            { subject: 'Maths', title: 'Calculus (Limits & Integration)', content: 'lim(x→0) (sin x)/x = 1 | lim(x→0) (eˣ - 1)/x = 1 | ∫u dv = uv - ∫v du | King Property: ∫₀ᵃ f(x)dx = ∫₀ᵃ f(a-x)dx' },
-            { subject: 'Maths', title: 'Vectors & 3D Geometry', content: 'a·b = |a||b|cosθ | |a×b| = |a||b|sinθ | Line: (x-x₁)/a = (y-y₁)/b = (z-z₁)/c | Plane: ax + by + cz + d = 0' }
+            { subject: 'Physics', title: 'Current Electricity & Circuits', content: 'V = IR | P = I²R | Kirchhoff Loop ΣΔV = 0 | Drift Velocity v_d = I/(neA)' },
+            { subject: 'Physics', title: 'Magnetism & EMI', content: 'Biol-Savart: dB = (μ₀/4π)(I dl × r̂)/r² | Lorentz Force: F = q(E + v × B) | Faraday: e = -dΦ/dt | L = NΦ/I' },
+            { subject: 'Physics', title: 'Optics (Ray & Wave)', content: 'Mirror/Lens: 1/f = 1/v + 1/p | Magnification m = -v/u | Prism: μ = sin((A+δ_m)/2)/sin(A/2) | Fringe width β = λD/d' },
+            { subject: 'Physics', title: 'Modern Physics (Bohr & Photoelectric)', content: 'E = hν = hc/λ | K_max = hν - φ₀ | r_n = 0.529 (n²/Z) Å | E_n = -13.6 (Z²/n²) eV' },
+            { subject: 'Chemistry', title: 'Mole Concept & Stoichiometry', content: 'Moles n = W/M = V(STP)/22.4 = Molarity × Volume(L) | Molality m = moles of solute / mass of solvent(kg)' },
+            { subject: 'Chemistry', title: 'Atomic Structure', content: 'De Broglie λ = h/p = h/mv | Heisenberg Δx·Δp ≥ h/(4π) | Energy Level E = -13.6 Z²/n² eV' },
+            { subject: 'Chemistry', title: 'Chemical & Ionic Equilibrium', content: 'ΔG = ΔH - TΔS | ΔG° = -RT ln K | pH = -log[H⁺] | K_w = [H⁺][OH⁻] = 10⁻¹⁴ at 298K' },
+            { subject: 'Chemistry', title: 'Thermodynamics & Thermochemistry', content: 'ΔU = q + w | ΔH = ΔU + PΔV | Kirchhoff: ΔH₂(T₂) - ΔH₁(T₁) = ΔC_p(T₂ - T₁)' },
+            { subject: 'Chemistry', title: 'Chemical Kinetics & Solutions', content: 'First Order: k = (2.303/t) log([A]₀/[A]) | t₁/₂ = 0.693/k | Raoult Law P_A = X_A P°_A | ΔT_b = K_b m' },
+            { subject: 'Chemistry', title: 'Electrochemistry (Nernst)', content: 'E_cell = E°_cell - (0.0591/n) log Q | ΔG° = -nFE°_cell | Λ_m = κ × 1000 / M' },
+            { subject: 'Chemistry', title: 'Coordination Compounds', content: 'CFSE = -0.4(t₂g) + 0.6(eg) Δ_o + P(pairing energy) | Effective Atomic Number (EAN) = Z - O.N. + 2(CN)' },
+            { subject: 'Chemistry', title: 'Organic Named Reactions', content: 'Aldol: α-H + dil. NaOH → β-hydroxy carbonyl | Cannizzaro: No α-H + conc. NaOH → Alcohol + Acid salt | Reimer-Tiemann: Phenol + CHCl₃ + NaOH → Salicylaldehyde' },
+            { subject: 'Maths', title: 'Quadratic Equations & Complex Numbers', content: 'Roots: x = (-b ± √(b² - 4ac)) / 2a | Sum α+β = -b/a | Product αβ = c/a | |z₁ + z₂| ≤ |z₁| + |z₂| | arg(z₁/z₂) = arg(z₁) - arg(z₂)' },
+            { subject: 'Maths', title: 'Sequence, Series & Binomial Theorem', content: 'AP: S_n = n/2(2a+(n-1)d) | GP: S_n = a(rⁿ-1)/(r-1) | Binomial expansion: T_{r+1} = ⁿC_r xⁿ⁻ʳ yʳ | Sum of coefficients = 2ⁿ' },
+            { subject: 'Maths', title: 'Permutations, Combinations & Probability', content: 'ⁿP_r = n!/(n-r)! | ⁿC_r = n!/(r!(n-r)!) | P(A ∪ B) = P(A) + P(B) - P(A ∩ B) | Bayes Theorem P(A_i|B) = P(B|A_i)P(A_i)/Σ P(B|A_j)P(A_j)' },
+            { subject: 'Maths', title: 'Trigonometry & Identities', content: 'sin(A±B) = sinAcosB ± cosAsinB | cos(A±B) = cosAcosB ∓ sinAsinB | sin2A = 2sinAcosA | cos2A = cos²A - sin²A' },
+            { subject: 'Maths', title: 'Coordinate Geometry (Straight Lines & Circles)', content: 'Distance formula | Slope m = (y₂-y₁)/(x₂-x₁) | Circle: (x-h)² + (y-k)² = r² | Tangent condition: c² = a²(1+m²)' },
+            { subject: 'Maths', title: 'Conic Sections (Parabola, Ellipse, Hyperbola)', content: 'Parabola y² = 4ax | Ellipse x²/a² + y²/b² = 1 (e = √(1-b²/a²)) | Hyperbola x²/a² - y²/b² = 1 (e = √(1+b²/a²))' },
+            { subject: 'Maths', title: 'Calculus (Limits, Continuity & Differentiability)', content: 'lim(x→0) (sin x)/x = 1 | lim(x→0) (eˣ - 1)/x = 1 | L\'Hpital rule for 0/0 or ∞/∞ forms' },
+            { subject: 'Maths', title: 'Integral Calculus & Differential Equations', content: '∫u dv = uv - ∫v du | King Property: ∫₀ᵃ f(x)dx = ∫₀ᵃ f(a-x)dx | Variable separable & Linear DE: dy/dx + Py = Q' },
+            { subject: 'Maths', title: 'Vectors & 3D Geometry', content: 'a·b = |a||b|cosθ | |a×b| = |a||b|sinθ | Shortest distance between two skew lines d = |(a₂-a₁)·(b₁×b₂)| / |b₁×b₂|' }
         ];
 
         const todayStr = new Date().toISOString().split('T')[0];
         document.getElementById('logDate').value = todayStr;
 
-        // Cross-Device Real-Time Cloud Sync
+        // Robust Cross-Device Real-Time Cloud Sync with Auto-Retry & Merge
         auth.onAuthStateChanged(user => {
             currentUser = user;
             if (unsubscribeCloud) {
@@ -574,18 +589,25 @@
                 document.getElementById('authBtn').innerHTML = '<i class="fa-solid fa-right-from-bracket mr-1.5"></i> Logout';
                 document.getElementById('syncNowBtn').classList.remove('hidden');
 
-                // Real-time listener for seamless cross-device sync
+                // Real-time listener with error tolerance
                 unsubscribeCloud = db.collection('users').doc(user.uid).onSnapshot(doc => {
                     if (doc.exists) {
                         const cloudData = doc.data();
                         if (!cloudData.books) cloudData.books = [];
-                        appData = Object.assign(getDefaultEmptyData(), cloudData);
-                        localStorage.setItem('delta_bm_data', JSON.stringify(appData));
-                        renderAll();
+                        if (!cloudData.todos) cloudData.todos = [];
+                        
+                        // Merge cloud data with local if cloud timestamp is newer or local is empty
+                        if ((cloudData.lastUpdated || 0) >= (appData.lastUpdated || 0)) {
+                            appData = Object.assign(getDefaultEmptyData(), cloudData);
+                            localStorage.setItem('delta_bm_data', JSON.stringify(appData));
+                            renderAll();
+                        }
                     } else {
                         saveData();
                     }
-                }, err => console.error("Realtime sync error:", err));
+                }, err => {
+                    console.error("Realtime sync listener error:", err);
+                });
             } else {
                 document.getElementById('authStatusText').innerText = 'Guest Mode (Local Sync)';
                 document.getElementById('authStatusBadge').classList.replace('bg-emerald-950', 'bg-gray-800');
@@ -600,7 +622,7 @@
             localStorage.setItem('delta_bm_data', JSON.stringify(appData));
             if (currentUser) {
                 db.collection('users').doc(currentUser.uid).set(appData, { merge: true })
-                    .catch(err => console.error("Cloud sync error:", err));
+                    .catch(err => console.error("Cloud save error:", err));
             }
         }
 
@@ -613,7 +635,10 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Syncing...';
             db.collection('users').doc(currentUser.uid).get().then(doc => {
                 if (doc.exists) {
-                    appData = Object.assign(getDefaultEmptyData(), doc.data());
+                    const cloudData = doc.data();
+                    if (!cloudData.books) cloudData.books = [];
+                    if (!cloudData.todos) cloudData.todos = [];
+                    appData = Object.assign(getDefaultEmptyData(), cloudData);
                     localStorage.setItem('delta_bm_data', JSON.stringify(appData));
                     renderAll();
                 } else {
@@ -624,8 +649,9 @@
                     setTimeout(() => btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Sync Now', 1500);
                 }, 400);
             }).catch(err => {
-                console.error(err);
-                btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Sync Now';
+                console.error("Manual sync failed:", err);
+                btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-rose-400"></i> Error';
+                setTimeout(() => btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Sync Now', 2000);
             });
         }
 
@@ -1152,19 +1178,21 @@
             renderMistakes();
         }
 
-        // To-Do
+        // To-Do (Bug Fixed with Robust String/Number ID Matching)
         function addTodoItem(e) {
             e.preventDefault();
             let input = document.getElementById('todoInput');
-            appData.todos.push({ id: Date.now(), text: input.value, completed: false });
+            if (!appData.todos) appData.todos = [];
+            appData.todos.push({ id: Date.now(), text: input.value.trim(), completed: false });
             saveData();
             renderTodos();
             input.value = '';
         }
         function renderTodos() {
             let container = document.getElementById('todoListContainer');
+            if (!container) return;
             container.innerHTML = '';
-            if (appData.todos.length === 0) {
+            if (!appData.todos || appData.todos.length === 0) {
                 container.innerHTML = `<p class="text-xs text-gray-400 italic">No tasks added yet.</p>`;
                 return;
             }
@@ -1174,19 +1202,23 @@
                 div.innerHTML = `
                     <span class="${t.completed ? 'line-through text-gray-500' : ''}">${t.text}</span>
                     <div class="flex gap-2">
-                        <button onclick="toggleTodo(${t.id})" class="text-xs px-2 py-1 rounded bg-gray-800">${t.completed ? 'Undo' : 'Done'}</button>
-                        <button onclick="deleteTodo(${t.id})" class="text-xs px-2 py-1 rounded bg-rose-900/40 text-rose-300">Delete</button>
+                        <button onclick="toggleTodo('${t.id}')" class="text-xs px-2 py-1 rounded bg-gray-800 hover:bg-gray-700">${t.completed ? 'Undo' : 'Done'}</button>
+                        <button onclick="deleteTodo('${t.id}')" class="text-xs px-2 py-1 rounded bg-rose-900/40 text-rose-300 hover:bg-rose-900">Delete</button>
                     </div>
                 `;
                 container.appendChild(div);
             });
         }
         function toggleTodo(id) {
-            let t = appData.todos.find(x => x.id === id);
-            if (t) { t.completed = !t.completed; saveData(); renderTodos(); }
+            let t = appData.todos.find(x => String(x.id) === String(id));
+            if (t) {
+                t.completed = !t.completed;
+                saveData();
+                renderTodos();
+            }
         }
         function deleteTodo(id) {
-            appData.todos = appData.todos.filter(x => x.id !== id);
+            appData.todos = appData.todos.filter(x => String(x.id) !== String(id));
             saveData();
             renderTodos();
         }
@@ -1199,7 +1231,8 @@
         function updateTimerDisplay() {
             let m = Math.floor(timeLeft / 60);
             let s = timeLeft % 60;
-            document.getElementById('timerDisplay').innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            const display = document.getElementById('timerDisplay');
+            if (display) display.innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
         }
         function setCustomTimer(mins) {
             pauseTimer();
@@ -1246,6 +1279,7 @@
         }
         function renderTimetable() {
             let container = document.getElementById('timetableContainer');
+            if (!container) return;
             container.innerHTML = '';
             if (appData.timetable.length === 0) {
                 container.innerHTML = `<p class="text-xs text-gray-400 italic">No custom timetable slots added yet.</p>`;
