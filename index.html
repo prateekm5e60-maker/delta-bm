@@ -10,10 +10,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs (Auth, Firestore & Storage) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
     <script>
         tailwind.config = {
@@ -33,7 +34,8 @@
     </script>
     <style>
         .glass { background: rgba(20, 20, 26, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .heatmap-cell { width: 13px; height: 13px; border-radius: 3px; }
+        .heatmap-cell { width: 14px; height: 14px; border-radius: 3px; cursor: pointer; transition: transform 0.15s; }
+        .heatmap-cell:hover { transform: scale(1.25); outline: 1px solid #818cf8; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #0a0a0c; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
@@ -57,12 +59,18 @@
                 <p class="text-sm text-gray-400 mt-1">JEE Advanced & Mains Full Manual Control Productivity Suite</p>
             </div>
             
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-2.5">
                 <div id="authStatusBadge" class="text-xs px-3 py-1.5 rounded-full bg-gray-800 text-gray-300 border border-gray-700 flex items-center gap-2">
                     <i class="fa-solid fa-cloud text-amber-400"></i> <span id="authStatusText">Guest Mode (Local Sync)</span>
                 </div>
-                <button onclick="openAuthModal()" id="authBtn" class="bg-gray-800 hover:bg-gray-700 text-sm px-4 py-2 rounded-xl font-medium border border-gray-700 transition">
+                <button onclick="manualSyncNow()" id="syncNowBtn" class="hidden bg-indigo-950/70 hover:bg-indigo-900 text-indigo-300 text-xs px-3 py-2 rounded-xl font-medium border border-indigo-800/60 transition flex items-center gap-1.5" title="Force Sync Across Devices">
+                    <i class="fa-solid fa-rotate"></i> Sync Now
+                </button>
+                <button onclick="handleAuthButtonClick()" id="authBtn" class="bg-gray-800 hover:bg-gray-700 text-sm px-4 py-2 rounded-xl font-medium border border-gray-700 transition">
                     <i class="fa-solid fa-user-lock mr-1.5"></i> Cloud Login
+                </button>
+                <button onclick="resetAllData()" class="bg-rose-950/60 hover:bg-rose-900 text-rose-300 text-xs px-3.5 py-2 rounded-xl font-medium border border-rose-800/60 transition flex items-center gap-1.5" title="Clear All Data & Start Fresh">
+                    <i class="fa-solid fa-trash-can"></i> Reset Data
                 </button>
             </div>
         </header>
@@ -71,7 +79,8 @@
         <nav class="flex overflow-x-auto space-x-2 py-4 my-2 border-b border-gray-800/60 no-scrollbar">
             <button onclick="switchTab('dashboard')" id="nav-dashboard" class="tab-btn px-4 py-2 rounded-xl text-sm font-semibold transition bg-accent text-white flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-chart-pie"></i> Dashboard</button>
             <button onclick="switchTab('pcm')" id="nav-pcm" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-book-open"></i> PCM & Questions</button>
-            <button onclick="switchTab('vault')" id="nav-vault" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-folder-open"></i> Notes Vault</button>
+            <button onclick="switchTab('vault')" id="nav-vault" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-folder-open"></i> Vault & Formulas</button>
+            <button onclick="switchTab('books')" id="nav-books" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-file-pdf"></i> Additional Books</button>
             <button onclick="switchTab('ai')" id="nav-ai" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Doubt Solver</button>
             <button onclick="switchTab('mistakes')" id="nav-mistakes" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-triangle-exclamation"></i> Mistake Log</button>
             <button onclick="switchTab('todos')" id="nav-todos" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-list-check"></i> To-Do</button>
@@ -95,11 +104,11 @@
                 </div>
                 <div class="glass p-5 rounded-2xl border border-gray-800">
                     <div class="text-gray-400 text-sm flex justify-between"><span>Streak (Manual)</span><i class="fa-solid fa-fire text-amber-500"></i></div>
-                    <div class="text-3xl font-bold mt-2"><span id="dashStreak">1</span> <span class="text-sm font-normal text-gray-400">Days</span></div>
+                    <div class="text-3xl font-bold mt-2"><span id="dashStreak">0</span> <span class="text-sm font-normal text-gray-400">Days</span></div>
                 </div>
             </div>
 
-            <!-- Logger & Target Controls -->
+            <!-- Logger, Heatmap & Date-wise History -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Manual Logger & Target Control -->
                 <div class="glass p-6 rounded-2xl border border-gray-800 lg:col-span-1 space-y-4">
@@ -107,30 +116,43 @@
                     <div class="space-y-3">
                         <div>
                             <label class="text-xs text-gray-400 block mb-1">Select Date</label>
-                            <input type="date" id="logDate" class="w-full bg-cardbg border border-gray-700 rounded-xl p-2.5 text-sm focus:outline-none focus:border-accent text-gray-200">
+                            <input type="date" id="logDate" onchange="loadSelectedDatePreview()" class="w-full bg-cardbg border border-gray-700 rounded-xl p-2.5 text-sm focus:outline-none focus:border-accent text-gray-200">
+                        </div>
+                        <div id="selectedDateStats" class="text-xs bg-indigo-950/40 border border-indigo-800/50 rounded-xl p-2.5 text-indigo-300">
+                            Selected Date Log: 0.0 Hrs | 0 Questions
                         </div>
                         <div>
-                            <label class="text-xs text-gray-400 block mb-1">Set Study Hours (Manual)</label>
+                            <label class="text-xs text-gray-400 block mb-1">Add Study Hours (Manual)</label>
                             <input type="number" id="quickHours" step="0.5" min="0" placeholder="e.g. 6.5" class="w-full bg-cardbg border border-gray-700 rounded-xl p-2.5 text-sm focus:outline-none focus:border-accent">
                         </div>
                         <div>
-                            <label class="text-xs text-gray-400 block mb-1">Set Questions Solved (Manual)</label>
+                            <label class="text-xs text-gray-400 block mb-1">Add Questions Solved (Manual)</label>
                             <input type="number" id="quickQuestions" min="0" placeholder="e.g. 75" class="w-full bg-cardbg border border-gray-700 rounded-xl p-2.5 text-sm focus:outline-none focus:border-accent">
                         </div>
                         <div>
                             <label class="text-xs text-gray-400 block mb-1">Manage Streak (Days)</label>
-                            <input type="number" id="manualStreakInput" min="1" placeholder="e.g. 5" class="w-full bg-cardbg border border-gray-700 rounded-xl p-2.5 text-sm focus:outline-none focus:border-accent">
+                            <input type="number" id="manualStreakInput" min="0" placeholder="e.g. 5" class="w-full bg-cardbg border border-gray-700 rounded-xl p-2.5 text-sm focus:outline-none focus:border-accent">
                         </div>
                         <button onclick="submitManualLog()" class="w-full bg-accent hover:bg-accenthover py-2.5 rounded-xl text-sm font-semibold transition">Save Manual Entry</button>
                     </div>
                 </div>
 
-                <!-- Heatmap -->
-                <div class="glass p-6 rounded-2xl border border-gray-800 lg:col-span-2 flex flex-col justify-between">
+                <!-- Heatmap & Date-wise History Log -->
+                <div class="glass p-6 rounded-2xl border border-gray-800 lg:col-span-2 flex flex-col justify-between space-y-6">
                     <div>
-                        <h2 class="text-lg font-bold flex items-center gap-2 mb-1"><i class="fa-solid fa-fire text-indigo-400"></i> JEE Consistency Heatmap</h2>
-                        <p class="text-xs text-gray-400 mb-4">Your daily grind intensity.</p>
-                        <div id="heatmapContainer" class="flex flex-wrap gap-1.5 p-2 bg-cardbg rounded-xl border border-gray-800 overflow-x-auto"></div>
+                        <h2 class="text-lg font-bold flex items-center gap-2 mb-1"><i class="fa-solid fa-fire text-indigo-400"></i> JEE Consistency Heatmap (30 Days)</h2>
+                        <p class="text-xs text-gray-400 mb-3">Click any square to inspect or add logs for that date.</p>
+                        <div id="heatmapContainer" class="flex flex-wrap gap-1.5 p-3 bg-cardbg rounded-xl border border-gray-800 overflow-x-auto"></div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-sm font-bold text-gray-200 flex items-center gap-2"><i class="fa-solid fa-calendar-check text-emerald-400"></i> Date-wise Study History</h3>
+                            <span class="text-xs text-gray-400" id="totalLoggedDaysCount">0 Days Logged</span>
+                        </div>
+                        <div class="bg-cardbg border border-gray-800 rounded-xl max-h-52 overflow-y-auto custom-scrollbar divide-y divide-gray-800/80" id="dateHistoryContainer">
+                            <p class="text-xs text-gray-400 italic p-4">No study logs recorded yet. Add your first entry on the left!</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -153,16 +175,58 @@
             <div id="pcmChaptersContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </section>
 
-        <!-- TAB 3: NOTES & FORMULA VAULT -->
+        <!-- TAB 3: NOTES & FORMULA VAULT + OFFLINE DICTIONARY -->
         <section id="tab-vault" class="tab-content hidden space-y-6 mt-4">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold">Study Notes & Formula Vault</h2>
-                <button onclick="openVaultModal()" class="bg-accent hover:bg-accenthover text-sm px-4 py-2 rounded-xl font-semibold transition">+ Add Note / Formula</button>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold">Offline Formula Dictionary & Notes Vault</h2>
+                    <p class="text-xs text-gray-400">Search built-in JEE formulas or add your custom short notes.</p>
+                </div>
+                <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                    <div class="relative flex-1 md:w-64">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400 text-xs"></i>
+                        <input type="text" id="vaultSearchInput" onkeyup="renderVault()" placeholder="Search formulas, chapters..." class="w-full bg-cardbg border border-gray-700 rounded-xl pl-8 pr-3 py-2 text-xs focus:outline-none focus:border-accent">
+                    </div>
+                    <select id="vaultFilterSubject" onchange="renderVault()" class="bg-cardbg border border-gray-700 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-accent">
+                        <option value="All">All Subjects</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Maths">Maths</option>
+                    </select>
+                    <button onclick="openVaultModal()" class="bg-accent hover:bg-accenthover text-xs px-4 py-2 rounded-xl font-semibold transition whitespace-nowrap">+ Add Custom Note</button>
+                </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="vaultContainer"></div>
+
+            <!-- Custom Saved Notes -->
+            <div class="space-y-3">
+                <h3 class="text-sm font-bold text-indigo-400 uppercase tracking-wider">Your Custom Notes & Links</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="vaultContainer"></div>
+            </div>
+
+            <!-- Built-in Offline JEE Formula Dictionary -->
+            <div class="space-y-3 pt-4 border-t border-gray-800/80">
+                <h3 class="text-sm font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-book-bookmark"></i> Built-in Offline JEE Formula Dictionary
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="offlineFormulaContainer"></div>
+            </div>
         </section>
 
-        <!-- TAB 4: AI DOUBT SOLVER -->
+        <!-- TAB 4: ADDITIONAL BOOKS & PDF LIBRARY -->
+        <section id="tab-books" class="tab-content hidden space-y-6 mt-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-file-pdf text-rose-400"></i> Additional Books & Study PDFs</h2>
+                    <p class="text-xs text-gray-400">Upload reference book PDFs to Firebase Storage or save Drive/direct PDF links.</p>
+                </div>
+                <button onclick="openBookModal()" class="bg-accent hover:bg-accenthover text-sm px-4 py-2 rounded-xl font-semibold transition flex items-center gap-2">
+                    <i class="fa-solid fa-upload"></i> + Upload / Add Book PDF
+                </button>
+            </div>
+            <div id="booksContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+        </section>
+
+        <!-- TAB 5: AI DOUBT SOLVER -->
         <section id="tab-ai" class="tab-content hidden space-y-6 mt-4">
             <div class="glass p-6 rounded-2xl border border-gray-800 space-y-4">
                 <div class="flex justify-between items-center">
@@ -182,7 +246,7 @@
             </div>
         </section>
 
-        <!-- TAB 5: MISTAKES -->
+        <!-- TAB 6: MISTAKES -->
         <section id="tab-mistakes" class="tab-content hidden space-y-6 mt-4">
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-bold">Mistake Log</h2>
@@ -193,7 +257,7 @@
             <div id="mistakesContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
         </section>
 
-        <!-- TAB 6: TODOS -->
+        <!-- TAB 7: TODOS -->
         <section id="tab-todos" class="tab-content hidden space-y-6 mt-4">
             <div class="glass p-6 rounded-2xl border border-gray-800 space-y-4">
                 <form id="todoForm" onsubmit="addTodoItem(event)" class="flex gap-3">
@@ -204,18 +268,33 @@
             </div>
         </section>
 
-        <!-- TAB 7: TIMETABLE & TIMER -->
+        <!-- TAB 8: TIMETABLE & TIMER -->
         <section id="tab-timetable" class="tab-content hidden space-y-6 mt-4">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="glass p-6 rounded-2xl border border-gray-800 flex flex-col items-center justify-center text-center space-y-6">
-                    <h2 class="text-lg font-bold">Pomodoro Timer</h2>
-                    <div class="w-48 h-48 flex items-center justify-center rounded-full border-4 border-indigo-500/30 bg-cardbg">
+                <div class="glass p-6 rounded-2xl border border-gray-800 flex flex-col items-center justify-center text-center space-y-5">
+                    <h2 class="text-lg font-bold">Pomodoro Timer (Manual Control)</h2>
+                    <div class="w-44 h-44 flex items-center justify-center rounded-full border-4 border-indigo-500/30 bg-cardbg">
                         <span id="timerDisplay" class="text-4xl font-extrabold tracking-wider">25:00</span>
                     </div>
+
+                    <!-- Manual Minute Presets & Custom Input -->
+                    <div class="w-full space-y-2">
+                        <div class="flex justify-center gap-2">
+                            <button onclick="setCustomTimer(15)" class="px-2.5 py-1 text-xs rounded-lg bg-gray-800 hover:bg-gray-700">15m</button>
+                            <button onclick="setCustomTimer(25)" class="px-2.5 py-1 text-xs rounded-lg bg-gray-800 hover:bg-gray-700">25m</button>
+                            <button onclick="setCustomTimer(45)" class="px-2.5 py-1 text-xs rounded-lg bg-gray-800 hover:bg-gray-700">45m</button>
+                            <button onclick="setCustomTimer(60)" class="px-2.5 py-1 text-xs rounded-lg bg-gray-800 hover:bg-gray-700">60m</button>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="number" id="customTimerMinutes" min="1" max="300" placeholder="Custom mins..." class="flex-1 bg-cardbg border border-gray-700 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-accent">
+                            <button onclick="applyManualTimerInput()" class="bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-xl text-xs font-semibold">Set</button>
+                        </div>
+                    </div>
+
                     <div class="flex gap-3 w-full">
-                        <button onclick="startTimer()" class="flex-1 bg-emerald-600 py-2.5 rounded-xl font-semibold text-sm">Start</button>
-                        <button onclick="pauseTimer()" class="flex-1 bg-amber-600 py-2.5 rounded-xl font-semibold text-sm">Pause</button>
-                        <button onclick="resetTimer()" class="flex-1 bg-rose-600 py-2.5 rounded-xl font-semibold text-sm">Reset</button>
+                        <button onclick="startTimer()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 py-2.5 rounded-xl font-semibold text-sm">Start</button>
+                        <button onclick="pauseTimer()" class="flex-1 bg-amber-600 hover:bg-amber-700 py-2.5 rounded-xl font-semibold text-sm">Pause</button>
+                        <button onclick="resetTimer()" class="flex-1 bg-rose-600 hover:bg-rose-700 py-2.5 rounded-xl font-semibold text-sm">Reset</button>
                     </div>
                 </div>
                 <div class="glass p-6 rounded-2xl border border-gray-800 lg:col-span-2 space-y-4">
@@ -271,6 +350,38 @@
                 <button onclick="calcAppend('0')" class="bg-gray-800/60 p-3 rounded-xl font-semibold col-span-2">0</button>
                 <button onclick="calcAppend('.')" class="bg-gray-800/60 p-3 rounded-xl font-semibold">.</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Book / PDF Upload Modal -->
+    <div id="bookModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass bg-cardbg p-6 rounded-2xl border border-gray-800 w-full max-w-md space-y-4">
+            <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-book text-accent"></i> Add Reference Book / PDF</h3>
+            <form onsubmit="saveBookItem(event)" class="space-y-3">
+                <select id="bookSubject" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm">
+                    <option value="Physics">Physics</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Maths">Mathematics</option>
+                    <option value="General / PYQ">General / PYQ</option>
+                </select>
+                <input type="text" id="bookTitle" placeholder="Book Name (e.g. HC Verma Vol 1, MS Chouhan)" class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm" required>
+                
+                <div class="bg-darkbg border border-gray-700 rounded-xl p-3 space-y-2">
+                    <label class="text-xs text-gray-300 font-semibold block">Option 1: Upload PDF File (Requires Cloud Login)</label>
+                    <input type="file" id="bookPdfFile" accept="application/pdf" class="text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700">
+                    <p id="uploadProgressText" class="text-xs text-amber-400 hidden">Uploading PDF to Firebase Storage...</p>
+                </div>
+
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">Option 2: Or Paste Google Drive / PDF Link</label>
+                    <input type="url" id="bookPdfLink" placeholder="https://drive.google.com/..." class="w-full bg-darkbg border border-gray-700 rounded-xl p-2.5 text-sm">
+                </div>
+
+                <div class="flex justify-end gap-3 mt-4">
+                    <button type="button" onclick="closeModal('bookModal')" class="px-4 py-2 rounded-xl text-sm bg-gray-800">Cancel</button>
+                    <button type="submit" id="saveBookBtn" class="px-4 py-2 rounded-xl text-sm bg-accent font-semibold">Save Book</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -405,58 +516,137 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+        const storage = firebase.storage();
 
         let currentUser = null;
         let currentPcmSub = 'Physics';
+        let unsubscribeCloud = null;
 
-        let appData = JSON.parse(localStorage.getItem('delta_bm_data')) || {
-            dailyLogs: {},
-            manualStreak: 5,
-            topics: [
-                { id: 1, subject: 'Physics', name: 'Mechanics', solved: 40, ai: 5, partial: 10, unsolved: 15 },
-                { id: 2, subject: 'Chemistry', name: 'Organic Basics', solved: 50, ai: 2, partial: 5, unsolved: 10 },
-                { id: 3, subject: 'Maths', name: 'Calculus', solved: 30, ai: 10, partial: 8, unsolved: 20 }
-            ],
-            vault: [],
-            mistakes: [],
-            todos: [],
-            timetable: []
-        };
+        // Clean Initial State (No Pre-filled Dummy Data)
+        function getDefaultEmptyData() {
+            return {
+                dailyLogs: {},
+                manualStreak: 0,
+                topics: [],
+                vault: [],
+                books: [],
+                mistakes: [],
+                todos: [],
+                timetable: [],
+                lastUpdated: 0
+            };
+        }
+
+        let appData = JSON.parse(localStorage.getItem('delta_bm_data')) || getDefaultEmptyData();
+        if (!appData.books) appData.books = [];
+
+        // Built-in Offline JEE Formula & Concept Dictionary
+        const offlineFormulas = [
+            { subject: 'Physics', title: 'Kinematics (Equations of Motion)', content: 'v = u + at | s = ut + ½at² | v² = u² + 2as | Range R = (u² sin 2θ)/g | Max Height H = (u² sin²θ)/(2g)' },
+            { subject: 'Physics', title: 'Rotational Dynamics', content: 'τ = Iα | L = Iω | K_rot = ½Iω² | Parallel Axis: I = I_cm + Md² | Rolling v_cm = ωR' },
+            { subject: 'Physics', title: 'Electrostatics & Gauss Law', content: 'F = kq₁q₂/r² | E = -dV/dr | Φ = ∮E·dA = q_in/ε₀ | Dipole Torque τ = p × E' },
+            { subject: 'Physics', title: 'Current Electricity & Magnetism', content: 'V = IR | P = I²R | Biot-Savart: dB = (μ₀/4π)(I dl × r̂)/r² | Lorentz Force: F = q(E + v × B)' },
+            { subject: 'Physics', title: 'Modern Physics (Photoelectric & Bohr)', content: 'E = hν = hc/λ | K_max = hν - φ₀ | r_n = 0.529 (n²/Z) Å | E_n = -13.6 (Z²/n²) eV' },
+            { subject: 'Chemistry', title: 'Thermodynamics & Equilibrium', content: 'ΔU = q + w | ΔG = ΔH - TΔS | ΔG° = -RT ln K | K_p = K_c(RT)^Δn' },
+            { subject: 'Chemistry', title: 'Electrochemistry (Nernst Equation)', content: 'E_cell = E°_cell - (0.0591/n) log Q | ΔG° = -nFE°_cell | Λ_m = κ × 1000 / M' },
+            { subject: 'Chemistry', title: 'Chemical Kinetics', content: 'First Order: k = (2.303/t) log([A]₀/[A]) | t₁/₂ = 0.693/k | Arrhenius: k = A e^(-Ea/RT)' },
+            { subject: 'Chemistry', title: 'Organic Named Reactions Quick Key', content: 'Aldol: α-H + dil. NaOH → β-hydroxy carbonyl | Cannizzaro: No α-H + conc. NaOH → Alcohol + Acid salt' },
+            { subject: 'Maths', title: 'Quadratic Equations', content: 'Roots: x = (-b ± √(b² - 4ac)) / 2a | Sum α+β = -b/a | Product αβ = c/a | D = b² - 4ac' },
+            { subject: 'Maths', title: 'Trigonometry & Inverse Trig', content: 'sin 2θ = 2 sinθ cosθ | cos 2θ = cos²θ - sin²θ | sin⁻¹x + cos⁻¹x = π/2 | tan⁻¹x + tan⁻¹y = tan⁻¹((x+y)/(1-xy))' },
+            { subject: 'Maths', title: 'Calculus (Limits & Integration)', content: 'lim(x→0) (sin x)/x = 1 | lim(x→0) (eˣ - 1)/x = 1 | ∫u dv = uv - ∫v du | King Property: ∫₀ᵃ f(x)dx = ∫₀ᵃ f(a-x)dx' },
+            { subject: 'Maths', title: 'Vectors & 3D Geometry', content: 'a·b = |a||b|cosθ | |a×b| = |a||b|sinθ | Line: (x-x₁)/a = (y-y₁)/b = (z-z₁)/c | Plane: ax + by + cz + d = 0' }
+        ];
 
         const todayStr = new Date().toISOString().split('T')[0];
         document.getElementById('logDate').value = todayStr;
 
+        // Cross-Device Real-Time Cloud Sync
         auth.onAuthStateChanged(user => {
             currentUser = user;
+            if (unsubscribeCloud) {
+                unsubscribeCloud();
+                unsubscribeCloud = null;
+            }
+
             if (user) {
                 document.getElementById('authStatusText').innerText = user.email;
                 document.getElementById('authStatusBadge').classList.replace('bg-gray-800', 'bg-emerald-950');
-                document.getElementById('authBtn').innerText = 'Logout';
-                loadCloudData();
+                document.getElementById('authBtn').innerHTML = '<i class="fa-solid fa-right-from-bracket mr-1.5"></i> Logout';
+                document.getElementById('syncNowBtn').classList.remove('hidden');
+
+                // Real-time listener for seamless cross-device sync
+                unsubscribeCloud = db.collection('users').doc(user.uid).onSnapshot(doc => {
+                    if (doc.exists) {
+                        const cloudData = doc.data();
+                        if (!cloudData.books) cloudData.books = [];
+                        appData = Object.assign(getDefaultEmptyData(), cloudData);
+                        localStorage.setItem('delta_bm_data', JSON.stringify(appData));
+                        renderAll();
+                    } else {
+                        saveData();
+                    }
+                }, err => console.error("Realtime sync error:", err));
             } else {
                 document.getElementById('authStatusText').innerText = 'Guest Mode (Local Sync)';
-                document.getElementById('authBtn').innerText = 'Cloud Login';
+                document.getElementById('authStatusBadge').classList.replace('bg-emerald-950', 'bg-gray-800');
+                document.getElementById('authBtn').innerHTML = '<i class="fa-solid fa-user-lock mr-1.5"></i> Cloud Login';
+                document.getElementById('syncNowBtn').classList.add('hidden');
             }
             renderAll();
         });
 
         function saveData() {
+            appData.lastUpdated = Date.now();
             localStorage.setItem('delta_bm_data', JSON.stringify(appData));
             if (currentUser) {
-                db.collection('users').doc(currentUser.uid).set(appData).catch(err => console.error("Cloud sync error:", err));
+                db.collection('users').doc(currentUser.uid).set(appData, { merge: true })
+                    .catch(err => console.error("Cloud sync error:", err));
             }
         }
 
-        function loadCloudData() {
-            if (!currentUser) return;
+        function manualSyncNow() {
+            if (!currentUser) {
+                alert('Please login to Cloud Sync first.');
+                return;
+            }
+            const btn = document.getElementById('syncNowBtn');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Syncing...';
             db.collection('users').doc(currentUser.uid).get().then(doc => {
                 if (doc.exists) {
-                    appData = doc.data();
+                    appData = Object.assign(getDefaultEmptyData(), doc.data());
                     localStorage.setItem('delta_bm_data', JSON.stringify(appData));
                     renderAll();
-                    console.log("Cloud data loaded successfully!");
+                } else {
+                    saveData();
                 }
-            }).catch(err => console.error("Cloud load error:", err));
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i> Synced';
+                    setTimeout(() => btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Sync Now', 1500);
+                }, 400);
+            }).catch(err => {
+                console.error(err);
+                btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Sync Now';
+            });
+        }
+
+        // Reset All Data Feature
+        function resetAllData() {
+            if (!confirm('Are you sure you want to reset ALL data? This will clear all your logs, chapters, notes, books, and tasks to a clean state.')) {
+                return;
+            }
+            appData = getDefaultEmptyData();
+            localStorage.removeItem('delta_bm_data');
+            if (currentUser) {
+                db.collection('users').doc(currentUser.uid).set(appData)
+                    .then(() => alert('All local and cloud data has been reset to a clean state!'))
+                    .catch(err => console.error(err));
+            } else {
+                alert('All local data has been reset to a clean state!');
+            }
+            document.getElementById('quickHours').value = '';
+            document.getElementById('quickQuestions').value = '';
+            document.getElementById('manualStreakInput').value = '';
+            renderAll();
         }
 
         function switchTab(tabId) {
@@ -499,12 +689,25 @@
             }
         }
 
-        // Dashboard & Manual Logger
+        // Dashboard, Manual Logger & Date-wise History
+        function loadSelectedDatePreview() {
+            const date = document.getElementById('logDate').value;
+            const log = appData.dailyLogs[date] || { hours: 0, questions: 0 };
+            document.getElementById('selectedDateStats').innerText = `Selected Date (${date}): ${log.hours.toFixed(1)} Hrs | ${log.questions} Questions`;
+        }
+
+        function selectHistoryDate(dateStr) {
+            document.getElementById('logDate').value = dateStr;
+            loadSelectedDatePreview();
+        }
+
         function submitManualLog() {
             const date = document.getElementById('logDate').value;
+            if (!date) return alert('Please select a date.');
+
             const hours = parseFloat(document.getElementById('quickHours').value) || 0;
             const questions = parseInt(document.getElementById('quickQuestions').value) || 0;
-            const streak = parseInt(document.getElementById('manualStreakInput').value);
+            const streakVal = document.getElementById('manualStreakInput').value;
 
             if (!appData.dailyLogs[date]) {
                 appData.dailyLogs[date] = { hours: 0, questions: 0 };
@@ -512,13 +715,23 @@
             appData.dailyLogs[date].hours += hours;
             appData.dailyLogs[date].questions += questions;
 
-            if (!isNaN(streak)) {
-                appData.manualStreak = streak;
+            if (streakVal !== '' && !isNaN(parseInt(streakVal))) {
+                appData.manualStreak = parseInt(streakVal);
             }
+
+            document.getElementById('quickHours').value = '';
+            document.getElementById('quickQuestions').value = '';
 
             saveData();
             renderAll();
-            alert('Manual entry saved successfully!');
+            alert('Manual entry saved for ' + date + '!');
+        }
+
+        function deleteDateLog(dateStr) {
+            if (!confirm(`Delete study log for ${dateStr}?`)) return;
+            delete appData.dailyLogs[dateStr];
+            saveData();
+            renderAll();
         }
 
         function renderDashboard() {
@@ -531,9 +744,11 @@
             document.getElementById('dashTotalHours').innerHTML = totalHrs.toFixed(1) + ' <span class="text-xs text-gray-400 font-normal">Hrs</span>';
             document.getElementById('dashTotalQ').innerText = totalQ;
             document.getElementById('dashCompletion').innerText = Math.min(100, Math.round((totalQ / 1000) * 100)) + '%';
-            document.getElementById('dashStreak').innerText = appData.manualStreak || 1;
+            document.getElementById('dashStreak').innerText = appData.manualStreak || 0;
 
-            // Heatmap
+            loadSelectedDatePreview();
+
+            // Heatmap (Clickable for Date-wise access)
             let hm = document.getElementById('heatmapContainer');
             hm.innerHTML = '';
             for (let i = 29; i >= 0; i--) {
@@ -544,12 +759,38 @@
                 let bg = 'bg-gray-800';
                 if (log && log.questions > 50) bg = 'bg-indigo-400';
                 else if (log && log.questions > 20) bg = 'bg-indigo-600';
-                else if (log && log.questions > 0) bg = 'bg-indigo-950';
+                else if (log && (log.questions > 0 || log.hours > 0)) bg = 'bg-indigo-950';
 
                 let cell = document.createElement('div');
                 cell.className = `heatmap-cell ${bg}`;
-                cell.title = `${dStr}: ${log ? log.questions : 0} Qs, ${log ? log.hours : 0} hrs`;
+                cell.title = `${dStr}: ${log ? log.questions : 0} Qs, ${log ? log.hours : 0} hrs (Click to select)`;
+                cell.onclick = () => selectHistoryDate(dStr);
                 hm.appendChild(cell);
+            }
+
+            // Date-wise History List (Sorted newest first)
+            const historyBox = document.getElementById('dateHistoryContainer');
+            const dates = Object.keys(appData.dailyLogs).sort((a, b) => b.localeCompare(a));
+            document.getElementById('totalLoggedDaysCount').innerText = `${dates.length} Days Logged`;
+
+            if (dates.length === 0) {
+                historyBox.innerHTML = `<p class="text-xs text-gray-400 italic p-4">No study logs recorded yet. Add your first entry on the left!</p>`;
+            } else {
+                historyBox.innerHTML = '';
+                dates.forEach(d => {
+                    const entry = appData.dailyLogs[d];
+                    const row = document.createElement('div');
+                    row.className = 'flex justify-between items-center px-4 py-2.5 text-xs hover:bg-cardhover transition';
+                    row.innerHTML = `
+                        <div class="flex items-center gap-3 cursor-pointer" onclick="selectHistoryDate('${d}')">
+                            <span class="font-mono font-semibold text-indigo-400">${d}</span>
+                            <span class="bg-gray-800 px-2 py-0.5 rounded text-gray-200">${(entry.hours || 0).toFixed(1)} Hrs</span>
+                            <span class="bg-purple-950/60 border border-purple-800/40 px-2 py-0.5 rounded text-purple-300">${entry.questions || 0} Qs</span>
+                        </div>
+                        <button onclick="deleteDateLog('${d}')" class="text-rose-400 hover:text-rose-300 px-2" title="Delete Date Log"><i class="fa-solid fa-trash"></i></button>
+                    `;
+                    historyBox.appendChild(row);
+                });
             }
         }
 
@@ -571,7 +812,7 @@
             let filtered = appData.topics.filter(t => t.subject === currentPcmSub);
 
             if (filtered.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-400 italic">No chapters added for ${currentPcmSub} yet.</p>`;
+                container.innerHTML = `<p class="text-xs text-gray-400 italic">No chapters added for ${currentPcmSub} yet. Click "+ Add Chapter" to begin.</p>`;
                 return;
             }
 
@@ -581,7 +822,10 @@
                 card.innerHTML = `
                     <div class="flex justify-between items-center">
                         <h4 class="font-bold text-base">${ch.name}</h4>
-                        <button onclick="openEditChapterModal(${ch.id})" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded-xl text-indigo-400 font-medium">Edit Counts</button>
+                        <div class="flex items-center gap-2">
+                            <button onclick="openEditChapterModal(${ch.id})" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded-xl text-indigo-400 font-medium">Edit Counts</button>
+                            <button onclick="deleteChapter(${ch.id})" class="text-xs bg-rose-950/50 hover:bg-rose-900 px-2.5 py-1 rounded-xl text-rose-400"><i class="fa-solid fa-trash"></i></button>
+                        </div>
                     </div>
                     <div class="grid grid-cols-2 gap-2 text-xs">
                         <div class="bg-cardbg p-2 rounded-xl border border-gray-800"><span class="text-emerald-400 font-bold">${ch.solved}</span> Solved (Indep.)</div>
@@ -592,6 +836,12 @@
                 `;
                 container.appendChild(card);
             });
+        }
+
+        function deleteChapter(id) {
+            appData.topics = appData.topics.filter(t => t.id !== id);
+            saveData();
+            renderPcmChapters();
         }
 
         function openAddTopicModal() { document.getElementById('topicModal').classList.remove('hidden'); }
@@ -634,7 +884,7 @@
             }
         }
 
-        // Notes Vault (Links & Formula Fix)
+        // Notes Vault + Global Search + Pre-populated Formula Dictionary
         function openVaultModal() { document.getElementById('vaultModal').classList.remove('hidden'); }
         function saveVaultItem(e) {
             e.preventDefault();
@@ -650,38 +900,172 @@
         }
 
         function renderVault() {
+            const query = (document.getElementById('vaultSearchInput')?.value || '').toLowerCase().trim();
+            const subFilter = document.getElementById('vaultFilterSubject')?.value || 'All';
+
+            // 1. Render User's Custom Notes
             let container = document.getElementById('vaultContainer');
             container.innerHTML = '';
-            if (appData.vault.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-400 italic col-span-3">No notes or formulas saved yet in the vault.</p>`;
-                return;
-            }
-            appData.vault.forEach(item => {
-                let formattedContent = item.content;
-                if (item.content.startsWith('http://') || item.content.startsWith('https://')) {
-                    formattedContent = `<a href="${item.content}" target="_blank" class="text-indigo-400 underline break-all flex items-center gap-1.5"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open Link / PDF</a>`;
-                } else {
-                    formattedContent = `<p class="whitespace-pre-wrap">${item.content}</p>`;
-                }
-
-                let card = document.createElement('div');
-                card.className = 'glass p-5 rounded-2xl border border-gray-800 space-y-2';
-                card.innerHTML = `
-                    <div class="flex justify-between items-center text-xs text-indigo-400 font-semibold">
-                        <span>${item.subject}</span>
-                        <button onclick="deleteVaultItem(${item.id})" class="text-rose-400 hover:text-rose-300"><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                    <h4 class="font-bold text-base">${item.title}</h4>
-                    <div class="text-sm text-gray-300 mt-2">${formattedContent}</div>
-                `;
-                container.appendChild(card);
+            let filteredCustom = appData.vault.filter(item => {
+                const matchesSub = subFilter === 'All' || item.subject === subFilter;
+                const matchesQuery = !query || item.title.toLowerCase().includes(query) || item.content.toLowerCase().includes(query) || item.subject.toLowerCase().includes(query);
+                return matchesSub && matchesQuery;
             });
+
+            if (filteredCustom.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 italic col-span-3">No matching custom notes found.</p>`;
+            } else {
+                filteredCustom.forEach(item => {
+                    let formattedContent = item.content;
+                    if (item.content.startsWith('http://') || item.content.startsWith('https://')) {
+                        formattedContent = `<a href="${item.content}" target="_blank" class="text-indigo-400 underline break-all flex items-center gap-1.5"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open Link / PDF</a>`;
+                    } else {
+                        formattedContent = `<p class="whitespace-pre-wrap">${item.content}</p>`;
+                    }
+
+                    let card = document.createElement('div');
+                    card.className = 'glass p-5 rounded-2xl border border-gray-800 space-y-2';
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center text-xs text-indigo-400 font-semibold">
+                            <span>${item.subject}</span>
+                            <button onclick="deleteVaultItem(${item.id})" class="text-rose-400 hover:text-rose-300"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                        <h4 class="font-bold text-base">${item.title}</h4>
+                        <div class="text-sm text-gray-300 mt-2">${formattedContent}</div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+
+            // 2. Render Built-in Offline JEE Formulas
+            let offlineBox = document.getElementById('offlineFormulaContainer');
+            offlineBox.innerHTML = '';
+            let filteredOffline = offlineFormulas.filter(f => {
+                const matchesSub = subFilter === 'All' || f.subject === subFilter;
+                const matchesQuery = !query || f.title.toLowerCase().includes(query) || f.content.toLowerCase().includes(query) || f.subject.toLowerCase().includes(query);
+                return matchesSub && matchesQuery;
+            });
+
+            if (filteredOffline.length === 0) {
+                offlineBox.innerHTML = `<p class="text-xs text-gray-400 italic col-span-3">No matching built-in formulas found.</p>`;
+            } else {
+                filteredOffline.forEach(f => {
+                    let card = document.createElement('div');
+                    card.className = 'glass p-5 rounded-2xl border border-gray-800/90 space-y-2';
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center text-xs font-semibold">
+                            <span class="text-emerald-400">${f.subject}</span>
+                            <span class="text-[10px] bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full">Offline Formula</span>
+                        </div>
+                        <h4 class="font-bold text-sm text-gray-100">${f.title}</h4>
+                        <div class="text-xs text-indigo-200 bg-darkbg/80 p-3 rounded-xl border border-gray-800 font-mono leading-relaxed">${f.content}</div>
+                    `;
+                    offlineBox.appendChild(card);
+                });
+            }
         }
 
         function deleteVaultItem(id) {
             appData.vault = appData.vault.filter(v => v.id !== id);
             saveData();
             renderVault();
+        }
+
+        // Additional Books & PDF Management (Firebase Storage + Direct Links)
+        function openBookModal() {
+            document.getElementById('bookTitle').value = '';
+            document.getElementById('bookPdfFile').value = '';
+            document.getElementById('bookPdfLink').value = '';
+            document.getElementById('uploadProgressText').classList.add('hidden');
+            document.getElementById('bookModal').classList.remove('hidden');
+        }
+
+        async function saveBookItem(e) {
+            e.preventDefault();
+            const subject = document.getElementById('bookSubject').value;
+            const title = document.getElementById('bookTitle').value.trim();
+            const fileInput = document.getElementById('bookPdfFile');
+            const linkInput = document.getElementById('bookPdfLink').value.trim();
+            const btn = document.getElementById('saveBookBtn');
+            const progressText = document.getElementById('uploadProgressText');
+
+            if (fileInput.files.length > 0) {
+                if (!currentUser) {
+                    alert('Please login via "Cloud Login" to upload PDF files to Firebase Storage, or paste a Google Drive link below.');
+                    return;
+                }
+                const file = fileInput.files[0];
+                try {
+                    btn.disabled = true;
+                    progressText.classList.remove('hidden');
+                    const storageRef = storage.ref(`users/${currentUser.uid}/books/${Date.now()}_${file.name}`);
+                    const snapshot = await storageRef.put(file);
+                    const downloadURL = await snapshot.ref.getDownloadURL();
+
+                    appData.books.push({
+                        id: Date.now(),
+                        subject,
+                        title,
+                        url: downloadURL,
+                        source: 'Firebase Storage PDF'
+                    });
+                    saveData();
+                    renderBooks();
+                    closeModal('bookModal');
+                } catch (err) {
+                    console.error("PDF Upload Error:", err);
+                    alert('Upload failed: ' + err.message);
+                } finally {
+                    btn.disabled = false;
+                    progressText.classList.add('hidden');
+                }
+            } else if (linkInput) {
+                appData.books.push({
+                    id: Date.now(),
+                    subject,
+                    title,
+                    url: linkInput,
+                    source: 'External / Drive PDF Link'
+                });
+                saveData();
+                renderBooks();
+                closeModal('bookModal');
+            } else {
+                alert('Please select a PDF file to upload OR paste a PDF link.');
+            }
+        }
+
+        function renderBooks() {
+            const container = document.getElementById('booksContainer');
+            container.innerHTML = '';
+            if (!appData.books || appData.books.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 italic col-span-3">No books uploaded yet. Click "+ Upload / Add Book PDF" to add your reference books.</p>`;
+                return;
+            }
+            appData.books.forEach(book => {
+                const card = document.createElement('div');
+                card.className = 'glass p-5 rounded-2xl border border-gray-800 flex flex-col justify-between space-y-4';
+                card.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-rose-400 font-semibold">${book.subject}</span>
+                            <button onclick="deleteBookItem(${book.id})" class="text-gray-400 hover:text-rose-400"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                        <h4 class="font-bold text-base flex items-center gap-2"><i class="fa-solid fa-file-pdf text-rose-500"></i> ${book.title}</h4>
+                        <p class="text-[11px] text-gray-400">${book.source}</p>
+                    </div>
+                    <a href="${book.url}" target="_blank" class="w-full text-center bg-indigo-600 hover:bg-indigo-700 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-book-open-reader"></i> Open & Read PDF
+                    </a>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function deleteBookItem(id) {
+            appData.books = appData.books.filter(b => b.id !== id);
+            saveData();
+            renderBooks();
         }
 
         // AI Doubt Solver Integration (Gemini API)
@@ -807,13 +1191,30 @@
             renderTodos();
         }
 
-        // Timetable & Timer
+        // Timetable & Timer (With Manual Controls)
         let timerInterval = null;
-        let timeLeft = 25 * 60;
+        let defaultTimerSeconds = 25 * 60;
+        let timeLeft = defaultTimerSeconds;
+
         function updateTimerDisplay() {
             let m = Math.floor(timeLeft / 60);
             let s = timeLeft % 60;
             document.getElementById('timerDisplay').innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+        function setCustomTimer(mins) {
+            pauseTimer();
+            defaultTimerSeconds = mins * 60;
+            timeLeft = defaultTimerSeconds;
+            updateTimerDisplay();
+        }
+        function applyManualTimerInput() {
+            const mins = parseInt(document.getElementById('customTimerMinutes').value);
+            if (!mins || mins <= 0) {
+                alert('Please enter valid minutes (1 - 300).');
+                return;
+            }
+            setCustomTimer(mins);
+            document.getElementById('customTimerMinutes').value = '';
         }
         function startTimer() {
             if (timerInterval) return;
@@ -829,7 +1230,7 @@
             }, 1000);
         }
         function pauseTimer() { clearInterval(timerInterval); timerInterval = null; }
-        function resetTimer() { pauseTimer(); timeLeft = 25 * 60; updateTimerDisplay(); }
+        function resetTimer() { pauseTimer(); timeLeft = defaultTimerSeconds; updateTimerDisplay(); }
 
         function openTimetableModal() { document.getElementById('timetableModal').classList.remove('hidden'); }
         function saveTimetableSlot(e) {
@@ -863,7 +1264,16 @@
             renderTimetable();
         }
 
-        // Auth Simulation / Firebase Login & Signup Fix
+        // Auth Login / Logout / Signup
+        function handleAuthButtonClick() {
+            if (currentUser) {
+                if (confirm('Do you want to logout from Firebase Cloud Sync?')) {
+                    auth.signOut();
+                }
+            } else {
+                openAuthModal();
+            }
+        }
         function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
         function simulateAuthLogin() {
             let email = document.getElementById('authEmail').value;
@@ -895,6 +1305,7 @@
             renderDashboard();
             renderPcmChapters();
             renderVault();
+            renderBooks();
             renderMistakes();
             renderTodos();
             renderTimetable();
