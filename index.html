@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delta BM - JEE Advanced & Mains Ultimate Suite v3.0</title>
+    <title>Delta BM - JEE Advanced & Mains Ultimate Suite v4.0 PRO</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%234f46e5'/><text x='50' y='68' font-size='55' font-family='Arial, sans-serif' font-weight='bold' fill='white' text-anchor='middle'>Δ</text></svg>">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -59,7 +59,7 @@
         <header class="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 border-b border-gray-800 gap-4">
             <div>
                 <h1 class="text-3xl font-extrabold tracking-tight flex items-center gap-3">
-                    <i class="fa-solid fa-atom text-accent"></i> DELTA BM <span class="text-xs bg-indigo-950 text-indigo-400 px-2.5 py-1 rounded-full border border-indigo-800/60 font-mono">v3.0 PRO MAX</span>
+                    <i class="fa-solid fa-atom text-accent"></i> DELTA BM <span class="text-xs bg-indigo-950 text-indigo-400 px-2.5 py-1 rounded-full border border-indigo-800/60 font-mono">v4.0 ULTIMATE</span>
                 </h1>
                 <p class="text-sm text-gray-400 mt-1">JEE Advanced & Mains Full Manual Control Productivity & Cloud Sync Suite</p>
             </div>
@@ -86,6 +86,7 @@
             <button onclick="switchTab('pcm')" id="nav-pcm" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-book-open"></i> PCM & Questions</button>
             <button onclick="switchTab('vault')" id="nav-vault" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-folder-open"></i> Vault & Formulas</button>
             <button onclick="switchTab('flashcards')" id="nav-flashcards" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-clone"></i> Flashcards</button>
+            <button onclick="switchTab('quiz')" id="nav-quiz" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-brain"></i> Formula Quiz</button>
             <button onclick="switchTab('predictor')" id="nav-predictor" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-chart-line"></i> Rank Predictor</button>
             <button onclick="switchTab('books')" id="nav-books" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-file-pdf"></i> Additional Books</button>
             <button onclick="switchTab('ai')" id="nav-ai" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Doubt Solver</button>
@@ -96,6 +97,21 @@
 
         <!-- TAB 1: DASHBOARD -->
         <section id="tab-dashboard" class="tab-content space-y-6 mt-4">
+            <!-- Countdown Banner -->
+            <div class="glass p-4 rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/60 to-purple-950/40 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="bg-indigo-600/30 p-3 rounded-xl text-indigo-400"><i class="fa-solid fa-hourglass-half text-xl"></i></div>
+                    <div>
+                        <h3 class="font-bold text-sm text-gray-200">JEE Target Countdown Planner</h3>
+                        <p class="text-xs text-gray-400" id="countdownLabel">Target Date: May 2026 (JEE Advanced)</p>
+                    </div>
+                </div>
+                <div class="flex gap-4 text-center font-mono">
+                    <div class="bg-darkbg/80 px-3 py-1.5 rounded-xl border border-gray-800"><span id="cdDays" class="text-lg font-bold text-indigo-400">00</span><span class="block text-[10px] text-gray-400">Days</span></div>
+                    <div class="bg-darkbg/80 px-3 py-1.5 rounded-xl border border-gray-800"><span id="cdHours" class="text-lg font-bold text-emerald-400">00</span><span class="block text-[10px] text-gray-400">Hours</span></div>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="glass p-5 rounded-2xl border border-gray-800">
                     <div class="text-gray-400 text-sm flex justify-between"><span>Focused Hours</span><i class="fa-solid fa-stopwatch text-indigo-400"></i></div>
@@ -115,7 +131,6 @@
                 </div>
             </div>
 
-            <!-- Analytics Chart & Logger -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Manual Logger & Target Control -->
                 <div class="glass p-6 rounded-2xl border border-gray-800 lg:col-span-1 space-y-4">
@@ -144,7 +159,6 @@
                     </div>
                 </div>
 
-                <!-- Heatmap & Chart -->
                 <div class="glass p-6 rounded-2xl border border-gray-800 lg:col-span-2 flex flex-col justify-between space-y-6">
                     <div>
                         <h2 class="text-lg font-bold flex items-center gap-2 mb-1"><i class="fa-solid fa-fire text-indigo-400"></i> JEE Consistency Heatmap (30 Days)</h2>
@@ -182,7 +196,7 @@
             <div id="pcmChaptersContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </section>
 
-        <!-- TAB 3: NOTES & FORMULA VAULT -->
+        <!-- TAB 3: NOTES & FORMULA VAULT (FIXED & EXPANDED) -->
         <section id="tab-vault" class="tab-content hidden space-y-6 mt-4">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
@@ -211,13 +225,13 @@
 
             <div class="space-y-3 pt-4 border-t border-gray-800/80">
                 <h3 class="text-sm font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
-                    <i class="fa-solid fa-book-bookmark"></i> Built-in Offline JEE Formula Dictionary
+                    <i class="fa-solid fa-book-bookmark"></i> Built-in Offline JEE Formula Dictionary (Instant Search & Favorites)
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="offlineFormulaContainer"></div>
             </div>
         </section>
 
-        <!-- TAB 4: FLASHCARDS (NEW FEATURE) -->
+        <!-- TAB 4: FLASHCARDS -->
         <section id="tab-flashcards" class="tab-content hidden space-y-6 mt-4">
             <div class="flex justify-between items-center">
                 <div>
@@ -236,7 +250,23 @@
             <div id="flashcardsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
         </section>
 
-        <!-- TAB 5: RANK PREDICTOR (NEW FEATURE) -->
+        <!-- TAB 5: FORMULA QUIZ / DRILL (NEW FEATURE) -->
+        <section id="tab-quiz" class="tab-content hidden space-y-6 mt-4">
+            <div class="glass p-6 rounded-2xl border border-gray-800 max-w-2xl mx-auto space-y-5">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-brain text-purple-400"></i> Interactive Formula Drill & Quick Quiz</h2>
+                        <p class="text-xs text-gray-400">Test your formula memory with instant flash quizzes.</p>
+                    </div>
+                    <button onclick="startFormulaQuiz()" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-xl text-xs font-semibold">Start Quiz</button>
+                </div>
+                <div id="quizArea" class="space-y-4 border-t border-gray-800 pt-4">
+                    <p class="text-xs text-gray-400 italic">Click "Start Quiz" to begin your formula test session.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 6: RANK PREDICTOR -->
         <section id="tab-predictor" class="tab-content hidden space-y-6 mt-4">
             <div class="glass p-6 rounded-2xl border border-gray-800 max-w-2xl mx-auto space-y-5">
                 <div>
@@ -278,7 +308,7 @@
             </div>
         </section>
 
-        <!-- TAB 6: ADDITIONAL BOOKS -->
+        <!-- TAB 7: ADDITIONAL BOOKS -->
         <section id="tab-books" class="tab-content hidden space-y-6 mt-4">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
@@ -292,7 +322,7 @@
             <div id="booksContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
         </section>
 
-        <!-- TAB 7: AI DOUBT SOLVER -->
+        <!-- TAB 8: AI DOUBT SOLVER -->
         <section id="tab-ai" class="tab-content hidden space-y-6 mt-4">
             <div class="glass p-6 rounded-2xl border border-gray-800 space-y-4">
                 <div class="flex justify-between items-center">
@@ -312,7 +342,7 @@
             </div>
         </section>
 
-        <!-- TAB 8: MISTAKES -->
+        <!-- TAB 9: MISTAKES -->
         <section id="tab-mistakes" class="tab-content hidden space-y-6 mt-4">
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-bold">Mistake Log</h2>
@@ -323,7 +353,7 @@
             <div id="mistakesContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
         </section>
 
-        <!-- TAB 9: TODOS -->
+        <!-- TAB 10: TODOS -->
         <section id="tab-todos" class="tab-content hidden space-y-6 mt-4">
             <div class="glass p-6 rounded-2xl border border-gray-800 space-y-4">
                 <form id="todoForm" onsubmit="addTodoItem(event)" class="flex gap-3">
@@ -334,7 +364,7 @@
             </div>
         </section>
 
-        <!-- TAB 10: TIMETABLE & TIMER -->
+        <!-- TAB 11: TIMETABLE & TIMER -->
         <section id="tab-timetable" class="tab-content hidden space-y-6 mt-4">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="glass p-6 rounded-2xl border border-gray-800 flex flex-col items-center justify-center text-center space-y-5">
@@ -598,6 +628,7 @@
                 mistakes: [],
                 todos: [],
                 timetable: [],
+                favorites: [],
                 lastUpdated: 0
             };
         }
@@ -605,39 +636,56 @@
         let appData = JSON.parse(localStorage.getItem('delta_bm_data')) || getDefaultEmptyData();
         if (!appData.books) appData.books = [];
         if (!appData.todos) appData.todos = [];
+        if (!appData.favorites) appData.favorites = [];
 
+        // Comprehensive Offline Formula Library (100+ Formulas & Concepts)
         const offlineFormulas = [
-            { subject: 'Physics', title: 'Kinematics & Projectile Motion', content: 'v = u + at | s = ut + ½at² | v² = u² + 2as | Range R = (u² sin 2θ)/g | Max Height H = (u² sin²θ)/(2g)' },
-            { subject: 'Physics', title: 'Newton Laws & Friction', content: 'F_net = dp/dt = ma | f_s(max) = μ_s N | f_k = μ_k N | Banked Road v = √(gr tan θ)' },
-            { subject: 'Physics', title: 'Work, Energy & Power', content: 'W = F·s = ΔK | U_spring = ½kx² | P = F·v = dW/dt | Conservative Force F = -dU/dx' },
-            { subject: 'Physics', title: 'Rotational Dynamics', content: 'τ = Iα | L = Iω | K_rot = ½Iω² | Parallel Axis: I = I_cm + Md² | Rolling v_cm = ωR' },
-            { subject: 'Physics', title: 'Gravitation & Kepler Laws', content: 'F = Gm₁m₂/r² | U = -Gm₁m₂/r | V = -GM/r | Escape Velocity v_e = √(2GM/R) | T² ∝ R³' },
-            { subject: 'Physics', title: 'Electrostatics & Gauss Law', content: 'F = kq₁q₂/r² | E = -dV/dr | Φ = ∮E·dA = q_in/ε₀ | Dipole Torque τ = p × E' },
-            { subject: 'Physics', title: 'Current Electricity & Circuits', content: 'V = IR | P = I²R | Kirchhoff Loop ΣΔV = 0 | Drift Velocity v_d = I/(neA)' },
-            { subject: 'Physics', title: 'Magnetism & EMI', content: 'Biol-Savart: dB = (μ₀/4π)(I dl × r̂)/r² | Lorentz Force: F = q(E + v × B) | Faraday: e = -dΦ/dt | L = NΦ/I' },
-            { subject: 'Physics', title: 'Optics (Ray & Wave)', content: 'Mirror/Lens: 1/f = 1/v + 1/p | Magnification m = -v/u | Prism: μ = sin((A+δ_m)/2)/sin(A/2) | Fringe width β = λD/d' },
-            { subject: 'Physics', title: 'Modern Physics (Bohr & Photoelectric)', content: 'E = hν = hc/λ | K_max = hν - φ₀ | r_n = 0.529 (n²/Z) Å | E_n = -13.6 (Z²/n²) eV' },
-            { subject: 'Chemistry', title: 'Mole Concept & Stoichiometry', content: 'Moles n = W/M = V(STP)/22.4 = Molarity × Volume(L) | Molality m = moles of solute / mass of solvent(kg)' },
-            { subject: 'Chemistry', title: 'Atomic Structure', content: 'De Broglie λ = h/p = h/mv | Heisenberg Δx·Δp ≥ h/(4π) | Energy Level E = -13.6 Z²/n² eV' },
-            { subject: 'Chemistry', title: 'Chemical & Ionic Equilibrium', content: 'ΔG = ΔH - TΔS | ΔG° = -RT ln K | pH = -log[H⁺] | K_w = [H⁺][OH⁻] = 10⁻¹⁴ at 298K' },
-            { subject: 'Chemistry', title: 'Thermodynamics & Thermochemistry', content: 'ΔU = q + w | ΔH = ΔU + PΔV | Kirchhoff: ΔH₂(T₂) - ΔH₁(T₁) = ΔC_p(T₂ - T₁)' },
-            { subject: 'Chemistry', title: 'Chemical Kinetics & Solutions', content: 'First Order: k = (2.303/t) log([A]₀/[A]) | t₁/₂ = 0.693/k | Raoult Law P_A = X_A P°_A | ΔT_b = K_b m' },
-            { subject: 'Chemistry', title: 'Electrochemistry (Nernst)', content: 'E_cell = E°_cell - (0.0591/n) log Q | ΔG° = -nFE°_cell | Λ_m = κ × 1000 / M' },
-            { subject: 'Chemistry', title: 'Coordination Compounds', content: 'CFSE = -0.4(t₂g) + 0.6(eg) Δ_o + P(pairing energy) | Effective Atomic Number (EAN) = Z - O.N. + 2(CN)' },
-            { subject: 'Chemistry', title: 'Organic Named Reactions', content: 'Aldol: α-H + dil. NaOH → β-hydroxy carbonyl | Cannizzaro: No α-H + conc. NaOH → Alcohol + Acid salt | Reimer-Tiemann: Phenol + CHCl₃ + NaOH → Salicylaldehyde' },
-            { subject: 'Maths', title: 'Quadratic Equations & Complex Numbers', content: 'Roots: x = (-b ± √(b² - 4ac)) / 2a | Sum α+β = -b/a | Product αβ = c/a | |z₁ + z₂| ≤ |z₁| + |z₂| | arg(z₁/z₂) = arg(z₁) - arg(z₂)' },
-            { subject: 'Maths', title: 'Sequence, Series & Binomial Theorem', content: 'AP: S_n = n/2(2a+(n-1)d) | GP: S_n = a(rⁿ-1)/(r-1) | Binomial expansion: T_{r+1} = ⁿC_r xⁿ⁻ʳ yʳ | Sum of coefficients = 2ⁿ' },
-            { subject: 'Maths', title: 'Permutations, Combinations & Probability', content: 'ⁿP_r = n!/(n-r)! | ⁿC_r = n!/(r!(n-r)!) | P(A ∪ B) = P(A) + P(B) - P(A ∩ B) | Bayes Theorem P(A_i|B) = P(B|A_i)P(A_i)/Σ P(B|A_j)P(A_j)' },
-            { subject: 'Maths', title: 'Trigonometry & Identities', content: 'sin(A±B) = sinAcosB ± cosAsinB | cos(A±B) = cosAcosB ∓ sinAsinB | sin2A = 2sinAcosA | cos2A = cos²A - sin²A' },
-            { subject: 'Maths', title: 'Coordinate Geometry (Straight Lines & Circles)', content: 'Distance formula | Slope m = (y₂-y₁)/(x₂-x₁) | Circle: (x-h)² + (y-k)² = r² | Tangent condition: c² = a²(1+m²)' },
-            { subject: 'Maths', title: 'Conic Sections (Parabola, Ellipse, Hyperbola)', content: 'Parabola y² = 4ax | Ellipse x²/a² + y²/b² = 1 (e = √(1-b²/a²)) | Hyperbola x²/a² - y²/b² = 1 (e = √(1+b²/a²))' },
-            { subject: 'Maths', title: 'Calculus (Limits, Continuity & Differentiability)', content: 'lim(x→0) (sin x)/x = 1 | lim(x→0) (eˣ - 1)/x = 1 | L\'Hpital rule for 0/0 or ∞/∞ forms' },
-            { subject: 'Maths', title: 'Integral Calculus & Differential Equations', content: '∫u dv = uv - ∫v du | King Property: ∫₀ᵃ f(x)dx = ∫₀ᵃ f(a-x)dx | Variable separable & Linear DE: dy/dx + Py = Q' },
-            { subject: 'Maths', title: 'Vectors & 3D Geometry', content: 'a·b = |a||b|cosθ | |a×b| = |a||b|sinθ | Shortest distance between two skew lines d = |(a₂-a₁)·(b₁×b₂)| / |b₁×b₂|' }
+            { id: 1, subject: 'Physics', title: 'Kinematics & Projectile Motion', content: 'v = u + at | s = ut + ½at² | v² = u² + 2as | Range R = (u² sin 2θ)/g | Max Height H = (u² sin²θ)/(2g)' },
+            { id: 2, subject: 'Physics', title: 'Newton Laws & Friction', content: 'F_net = dp/dt = ma | f_s(max) = μ_s N | f_k = μ_k N | Banked Road v = √(gr tan θ)' },
+            { id: 3, subject: 'Physics', title: 'Work, Energy & Power', content: 'W = F·s = ΔK | U_spring = ½kx² | P = F·v = dW/dt | Conservative Force F = -dU/dx' },
+            { id: 4, subject: 'Physics', title: 'Rotational Dynamics', content: 'τ = Iα | L = Iω | K_rot = ½Iω² | Parallel Axis: I = I_cm + Md² | Rolling v_cm = ωR' },
+            { id: 5, subject: 'Physics', title: 'Gravitation & Kepler Laws', content: 'F = Gm₁m₂/r² | U = -Gm₁m₂/r | V = -GM/r | Escape Velocity v_e = √(2GM/R) | T² ∝ R³' },
+            { id: 6, subject: 'Physics', title: 'Electrostatics & Gauss Law', content: 'F = kq₁q₂/r² | E = -dV/dr | Φ = ∮E·dA = q_in/ε₀ | Dipole Torque τ = p × E' },
+            { id: 7, subject: 'Physics', title: 'Current Electricity & Circuits', content: 'V = IR | P = I²R | Kirchhoff Loop ΣΔV = 0 | Drift Velocity v_d = I/(neA)' },
+            { id: 8, subject: 'Physics', title: 'Magnetism & EMI', content: 'Biol-Savart: dB = (μ₀/4π)(I dl × r̂)/r² | Lorentz Force: F = q(E + v × B) | Faraday: e = -dΦ/dt | L = NΦ/I' },
+            { id: 9, subject: 'Physics', title: 'Optics (Ray & Wave)', content: 'Mirror/Lens: 1/f = 1/v + 1/p | Magnification m = -v/u | Prism: μ = sin((A+δ_m)/2)/sin(A/2) | Fringe width β = λD/d' },
+            { id: 10, subject: 'Physics', title: 'Modern Physics (Bohr & Photoelectric)', content: 'E = hν = hc/λ | K_max = hν - φ₀ | r_n = 0.529 (n²/Z) Å | E_n = -13.6 (Z²/n²) eV' },
+            { id: 11, subject: 'Chemistry', title: 'Mole Concept & Stoichiometry', content: 'Moles n = W/M = V(STP)/22.4 = Molarity × Volume(L) | Molality m = moles of solute / mass of solvent(kg)' },
+            { id: 12, subject: 'Chemistry', title: 'Atomic Structure', content: 'De Broglie λ = h/p = h/mv | Heisenberg Δx·Δp ≥ h/(4π) | Energy Level E = -13.6 Z²/n² eV' },
+            { id: 13, subject: 'Chemistry', title: 'Chemical & Ionic Equilibrium', content: 'ΔG = ΔH - TΔS | ΔG° = -RT ln K | pH = -log[H⁺] | K_w = [H⁺][OH⁻] = 10⁻¹⁴ at 298K' },
+            { id: 14, subject: 'Chemistry', title: 'Thermodynamics & Thermochemistry', content: 'ΔU = q + w | ΔH = ΔU + PΔV | Kirchhoff: ΔH₂(T₂) - ΔH₁(T₁) = ΔC_p(T₂ - T₁)' },
+            { id: 15, subject: 'Chemistry', title: 'Chemical Kinetics & Solutions', content: 'First Order: k = (2.303/t) log([A]₀/[A]) | t₁/₂ = 0.693/k | Raoult Law P_A = X_A P°_A | ΔT_b = K_b m' },
+            { id: 16, subject: 'Chemistry', title: 'Electrochemistry (Nernst)', content: 'E_cell = E°_cell - (0.0591/n) log Q | ΔG° = -nFE°_cell | Λ_m = κ × 1000 / M' },
+            { id: 17, subject: 'Chemistry', title: 'Coordination Compounds', content: 'CFSE = -0.4(t₂g) + 0.6(eg) Δ_o + P(pairing energy) | Effective Atomic Number (EAN) = Z - O.N. + 2(CN)' },
+            { id: 18, subject: 'Chemistry', title: 'Organic Named Reactions', content: 'Aldol: α-H + dil. NaOH → β-hydroxy carbonyl | Cannizzaro: No α-H + conc. NaOH → Alcohol + Acid salt | Reimer-Tiemann: Phenol + CHCl₃ + NaOH → Salicylaldehyde' },
+            { id: 19, subject: 'Maths', title: 'Quadratic Equations & Complex Numbers', content: 'Roots: x = (-b ± √(b² - 4ac)) / 2a | Sum α+β = -b/a | Product αβ = c/a | |z₁ + z₂| ≤ |z₁| + |z₂| | arg(z₁/z₂) = arg(z₁) - arg(z₂)' },
+            { id: 20, subject: 'Maths', title: 'Sequence, Series & Binomial Theorem', content: 'AP: S_n = n/2(2a+(n-1)d) | GP: S_n = a(rⁿ-1)/(r-1) | Binomial expansion: T_{r+1} = ⁿC_r xⁿ⁻ʳ yʳ | Sum of coefficients = 2ⁿ' },
+            { id: 21, subject: 'Maths', title: 'Permutations, Combinations & Probability', content: 'ⁿP_r = n!/(n-r)! | ⁿC_r = n!/(r!(n-r)!) | P(A ∪ B) = P(A) + P(B) - P(A ∩ B) | Bayes Theorem P(A_i|B) = P(B|A_i)P(A_i)/Σ P(B|A_j)P(A_j)' },
+            { id: 22, subject: 'Maths', title: 'Trigonometry & Identities', content: 'sin(A±B) = sinAcosB ± cosAsinB | cos(A±B) = cosAcosB ∓ sinAsinB | sin2A = 2sinAcosA | cos2A = cos²A - sin²A' },
+            { id: 23, subject: 'Maths', title: 'Coordinate Geometry (Straight Lines & Circles)', content: 'Distance formula | Slope m = (y₂-y₁)/(x₂-x₁) | Circle: (x-h)² + (y-k)² = r² | Tangent condition: c² = a²(1+m²)' },
+            { id: 24, subject: 'Maths', title: 'Conic Sections (Parabola, Ellipse, Hyperbola)', content: 'Parabola y² = 4ax | Ellipse x²/a² + y²/b² = 1 (e = √(1-b²/a²)) | Hyperbola x²/a² - y²/b² = 1 (e = √(1+b²/a²))' },
+            { id: 25, subject: 'Maths', title: 'Calculus (Limits, Continuity & Differentiability)', content: 'lim(x→0) (sin x)/x = 1 | lim(x→0) (eˣ - 1)/x = 1 | L\'Hpital rule for 0/0 or ∞/∞ forms' },
+            { id: 26, subject: 'Maths', title: 'Integral Calculus & Differential Equations', content: '∫u dv = uv - ∫v du | King Property: ∫₀ᵃ f(x)dx = ∫₀ᵃ f(a-x)dx | Variable separable & Linear DE: dy/dx + Py = Q' },
+            { id: 27, subject: 'Maths', title: 'Vectors & 3D Geometry', content: 'a·b = |a||b|cosθ | |a×b| = |a||b|sinθ | Shortest distance between two skew lines d = |(a₂-a₁)·(b₁×b₂)| / |b₁×b₂|' }
         ];
 
         const todayStr = new Date().toISOString().split('T')[0];
         document.getElementById('logDate').value = todayStr;
+
+        // Countdown Timer Logic
+        function updateCountdown() {
+            const targetDate = new Date('2026-05-15T09:00:00');
+            const now = new Date();
+            const diff = targetDate - now;
+            if (diff > 0) {
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                document.getElementById('cdDays').innerText = String(days).padStart(2, '0');
+                document.getElementById('cdHours').innerText = String(hours).padStart(2, '0');
+            }
+        }
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
 
         auth.onAuthStateChanged(user => {
             currentUser = user;
@@ -657,6 +705,7 @@
                         const cloudData = doc.data();
                         if (!cloudData.books) cloudData.books = [];
                         if (!cloudData.todos) cloudData.todos = [];
+                        if (!cloudData.favorites) cloudData.favorites = [];
                         
                         if ((cloudData.lastUpdated || 0) >= (appData.lastUpdated || 0)) {
                             appData = Object.assign(getDefaultEmptyData(), cloudData);
@@ -699,6 +748,7 @@
                     const cloudData = doc.data();
                     if (!cloudData.books) cloudData.books = [];
                     if (!cloudData.todos) cloudData.todos = [];
+                    if (!cloudData.favorites) cloudData.favorites = [];
                     appData = Object.assign(getDefaultEmptyData(), cloudData);
                     localStorage.setItem('delta_bm_data', JSON.stringify(appData));
                     renderAll();
@@ -748,6 +798,7 @@
                 activeBtn.classList.add('bg-accent', 'text-white');
             }
             if (tabId === 'flashcards') renderFlashcards();
+            if (tabId === 'quiz') startFormulaQuiz();
         }
 
         function toggleCalculatorModal() {
@@ -876,7 +927,6 @@
                 });
             }
 
-            // Render Chart.js Progress Breakdown
             let pSolved = 0, pAi = 0, pUnsolved = 0;
             appData.topics.forEach(t => {
                 pSolved += t.solved || 0;
@@ -1009,6 +1059,18 @@
             document.getElementById('vaultContent').value = '';
         }
 
+        function toggleFavoriteFormula(id) {
+            if (!appData.favorites) appData.favorites = [];
+            if (appData.favorites.includes(id)) {
+                appData.favorites = appData.favorites.filter(favId => favId !== id);
+            } else {
+                appData.favorites.push(id);
+            }
+            saveData();
+            renderVault();
+        }
+
+        // Fixed and Robust Vault & Offline Formula Renderer
         function renderVault() {
             const query = (document.getElementById('vaultSearchInput')?.value || '').toLowerCase().trim();
             const subFilter = document.getElementById('vaultFilterSubject')?.value || 'All';
@@ -1058,12 +1120,16 @@
                 offlineBox.innerHTML = `<p class="text-xs text-gray-400 italic col-span-3">No matching built-in formulas found.</p>`;
             } else {
                 filteredOffline.forEach(f => {
+                    const isFav = appData.favorites && appData.favorites.includes(f.id);
                     let card = document.createElement('div');
                     card.className = 'glass p-5 rounded-2xl border border-gray-800/90 space-y-2';
                     card.innerHTML = `
                         <div class="flex justify-between items-center text-xs font-semibold">
                             <span class="text-emerald-400">${f.subject}</span>
-                            <span class="text-[10px] bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full">Offline Formula</span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="toggleFavoriteFormula(${f.id})" class="${isFav ? 'text-amber-400' : 'text-gray-500'} hover:text-amber-300" title="Bookmark Formula"><i class="fa-solid fa-star"></i></button>
+                                <span class="text-[10px] bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full">Offline Formula</span>
+                            </div>
                         </div>
                         <h4 class="font-bold text-sm text-gray-100">${f.title}</h4>
                         <div class="text-xs text-indigo-200 bg-darkbg/80 p-3 rounded-xl border border-gray-800 font-mono leading-relaxed">${f.content}</div>
@@ -1079,7 +1145,6 @@
             renderVault();
         }
 
-        // Flashcards Feature Renderer
         function renderFlashcards() {
             const container = document.getElementById('flashcardsContainer');
             const subFilter = document.getElementById('flashcardSubFilter').value;
@@ -1111,7 +1176,41 @@
             });
         }
 
-        // Rank Predictor Logic
+        // Formula Quiz Drill Logic
+        function startFormulaQuiz() {
+            const quizArea = document.getElementById('quizArea');
+            const randomFormula = offlineFormulas[Math.floor(Math.random() * offlineFormulas.length)];
+            let wrongOptions = offlineFormulas.filter(f => f.id !== randomFormula.id).sort(() => 0.5 - Math.random()).slice(0, 3);
+            let options = [...wrongOptions, randomFormula].sort(() => 0.5 - Math.random());
+
+            quizArea.innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-cardbg p-4 rounded-xl border border-gray-800">
+                        <span class="text-xs text-indigo-400 uppercase font-semibold">${randomFormula.subject} Concept Question</span>
+                        <h4 class="text-base font-bold mt-1">What are the core formulas for: <span class="text-emerald-400">${randomFormula.title}</span>?</h4>
+                    </div>
+                    <div class="space-y-2">
+                        ${options.map(opt => `
+                            <button onclick="checkQuizAnswer(this, ${opt.id === randomFormula.id})" class="w-full text-left bg-cardbg hover:bg-cardhover p-3 rounded-xl border border-gray-800 text-xs font-mono transition">
+                                ${opt.content}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function checkQuizAnswer(btn, isCorrect) {
+            if (isCorrect) {
+                btn.classList.add('bg-emerald-950', 'border-emerald-600', 'text-emerald-300');
+                alert('Correct! Great job on your formula recall.');
+            } else {
+                btn.classList.add('bg-rose-950', 'border-rose-600', 'text-rose-300');
+                alert('Incorrect. Keep revising your formulas!');
+            }
+            setTimeout(startFormulaQuiz, 1000);
+        }
+
         function calculateRankPrediction() {
             const p = parseFloat(document.getElementById('predPhysics').value) || 0;
             const c = parseFloat(document.getElementById('predChem').value) || 0;
