@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delta BM - JEE Advanced & Mains Ultimate Suite</title>
+    <title>Delta BM - JEE Advanced & Mains Ultimate Suite v3.0</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%234f46e5'/><text x='50' y='68' font-size='55' font-family='Arial, sans-serif' font-weight='bold' fill='white' text-anchor='middle'>Δ</text></svg>">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -39,6 +39,11 @@
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #0a0a0c; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+        .flip-card { perspective: 1000px; }
+        .flip-card-inner { transition: transform 0.6s; transform-style: preserve-3d; }
+        .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+        .flip-front, .flip-back { backface-visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .flip-back { transform: rotateY(180deg); }
     </style>
 </head>
 <body class="bg-darkbg text-gray-100 min-h-screen font-sans selection:bg-accent selection:text-white pb-24">
@@ -54,7 +59,7 @@
         <header class="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 border-b border-gray-800 gap-4">
             <div>
                 <h1 class="text-3xl font-extrabold tracking-tight flex items-center gap-3">
-                    <i class="fa-solid fa-atom text-accent"></i> DELTA BM <span class="text-xs bg-indigo-950 text-indigo-400 px-2.5 py-1 rounded-full border border-indigo-800/60 font-mono">v2.5 PRO</span>
+                    <i class="fa-solid fa-atom text-accent"></i> DELTA BM <span class="text-xs bg-indigo-950 text-indigo-400 px-2.5 py-1 rounded-full border border-indigo-800/60 font-mono">v3.0 PRO MAX</span>
                 </h1>
                 <p class="text-sm text-gray-400 mt-1">JEE Advanced & Mains Full Manual Control Productivity & Cloud Sync Suite</p>
             </div>
@@ -80,6 +85,8 @@
             <button onclick="switchTab('dashboard')" id="nav-dashboard" class="tab-btn px-4 py-2 rounded-xl text-sm font-semibold transition bg-accent text-white flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-chart-pie"></i> Dashboard</button>
             <button onclick="switchTab('pcm')" id="nav-pcm" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-book-open"></i> PCM & Questions</button>
             <button onclick="switchTab('vault')" id="nav-vault" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-folder-open"></i> Vault & Formulas</button>
+            <button onclick="switchTab('flashcards')" id="nav-flashcards" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-clone"></i> Flashcards</button>
+            <button onclick="switchTab('predictor')" id="nav-predictor" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-chart-line"></i> Rank Predictor</button>
             <button onclick="switchTab('books')" id="nav-books" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-file-pdf"></i> Additional Books</button>
             <button onclick="switchTab('ai')" id="nav-ai" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Doubt Solver</button>
             <button onclick="switchTab('mistakes')" id="nav-mistakes" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition text-gray-400 hover:text-white hover:bg-cardhover flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-triangle-exclamation"></i> Mistake Log</button>
@@ -108,7 +115,7 @@
                 </div>
             </div>
 
-            <!-- Logger, Heatmap & Date-wise History -->
+            <!-- Analytics Chart & Logger -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Manual Logger & Target Control -->
                 <div class="glass p-6 rounded-2xl border border-gray-800 lg:col-span-1 space-y-4">
@@ -137,7 +144,7 @@
                     </div>
                 </div>
 
-                <!-- Heatmap & Date-wise History Log -->
+                <!-- Heatmap & Chart -->
                 <div class="glass p-6 rounded-2xl border border-gray-800 lg:col-span-2 flex flex-col justify-between space-y-6">
                     <div>
                         <h2 class="text-lg font-bold flex items-center gap-2 mb-1"><i class="fa-solid fa-fire text-indigo-400"></i> JEE Consistency Heatmap (30 Days)</h2>
@@ -147,11 +154,11 @@
 
                     <div>
                         <div class="flex justify-between items-center mb-2">
-                            <h3 class="text-sm font-bold text-gray-200 flex items-center gap-2"><i class="fa-solid fa-calendar-check text-emerald-400"></i> Date-wise Study History</h3>
+                            <h3 class="text-sm font-bold text-gray-200 flex items-center gap-2"><i class="fa-solid fa-chart-column text-emerald-400"></i> Subject Progress Breakdown</h3>
                             <span class="text-xs text-gray-400" id="totalLoggedDaysCount">0 Days Logged</span>
                         </div>
-                        <div class="bg-cardbg border border-gray-800 rounded-xl max-h-52 overflow-y-auto custom-scrollbar divide-y divide-gray-800/80" id="dateHistoryContainer">
-                            <p class="text-xs text-gray-400 italic p-4">No study logs recorded yet. Add your first entry on the left!</p>
+                        <div class="bg-cardbg border border-gray-800 rounded-xl p-4 h-48 flex items-center justify-center">
+                            <canvas id="progressChart" class="w-full h-full"></canvas>
                         </div>
                     </div>
                 </div>
@@ -175,12 +182,12 @@
             <div id="pcmChaptersContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </section>
 
-        <!-- TAB 3: NOTES & FORMULA VAULT + OFFLINE DICTIONARY & FLASHCARDS -->
+        <!-- TAB 3: NOTES & FORMULA VAULT -->
         <section id="tab-vault" class="tab-content hidden space-y-6 mt-4">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h2 class="text-xl font-bold">Offline Formula Dictionary & Notes Vault</h2>
-                    <p class="text-xs text-gray-400">Search built-in JEE formulas, flashcards or add your custom short notes.</p>
+                    <p class="text-xs text-gray-400">Search built-in JEE formulas or add your custom short notes.</p>
                 </div>
                 <div class="flex flex-wrap gap-2 w-full md:w-auto">
                     <div class="relative flex-1 md:w-64">
@@ -197,22 +204,81 @@
                 </div>
             </div>
 
-            <!-- Custom Saved Notes -->
             <div class="space-y-3">
                 <h3 class="text-sm font-bold text-indigo-400 uppercase tracking-wider">Your Custom Notes & Links</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="vaultContainer"></div>
             </div>
 
-            <!-- Built-in Offline JEE Formula Dictionary -->
             <div class="space-y-3 pt-4 border-t border-gray-800/80">
                 <h3 class="text-sm font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
-                    <i class="fa-solid fa-book-bookmark"></i> Built-in Offline JEE Formula Dictionary & Quick Cards
+                    <i class="fa-solid fa-book-bookmark"></i> Built-in Offline JEE Formula Dictionary
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="offlineFormulaContainer"></div>
             </div>
         </section>
 
-        <!-- TAB 4: ADDITIONAL BOOKS & PDF LIBRARY -->
+        <!-- TAB 4: FLASHCARDS (NEW FEATURE) -->
+        <section id="tab-flashcards" class="tab-content hidden space-y-6 mt-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-clone text-accent"></i> JEE Formula & Concept Flashcards</h2>
+                    <p class="text-xs text-gray-400">Click card to flip between Question/Concept and Formula/Answer.</p>
+                </div>
+                <div class="flex gap-2">
+                    <select id="flashcardSubFilter" onchange="renderFlashcards()" class="bg-cardbg border border-gray-700 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-accent">
+                        <option value="All">All Subjects</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Maths">Maths</option>
+                    </select>
+                </div>
+            </div>
+            <div id="flashcardsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+        </section>
+
+        <!-- TAB 5: RANK PREDICTOR (NEW FEATURE) -->
+        <section id="tab-predictor" class="tab-content hidden space-y-6 mt-4">
+            <div class="glass p-6 rounded-2xl border border-gray-800 max-w-2xl mx-auto space-y-5">
+                <div>
+                    <h2 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-chart-line text-emerald-400"></i> JEE Mock Test Rank & Percentile Predictor</h2>
+                    <p class="text-xs text-gray-400">Enter your mock test scores to estimate your JEE Main percentile and Advanced rank.</p>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="text-xs text-gray-400 block mb-1">Physics Score (/100)</label>
+                        <input type="number" id="predPhysics" min="0" max="100" placeholder="e.g. 75" class="w-full bg-cardbg border border-gray-700 rounded-xl p-2.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 block mb-1">Chemistry Score (/100)</label>
+                        <input type="number" id="predChem" min="0" max="100" placeholder="e.g. 80" class="w-full bg-cardbg border border-gray-700 rounded-xl p-2.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 block mb-1">Maths Score (/100)</label>
+                        <input type="number" id="predMath" min="0" max="100" placeholder="e.g. 60" class="w-full bg-cardbg border border-gray-700 rounded-xl p-2.5 text-sm">
+                    </div>
+                </div>
+                <button onclick="calculateRankPrediction()" class="w-full bg-accent hover:bg-accenthover py-3 rounded-xl font-semibold text-sm transition">Predict My Rank & Percentile</button>
+                <div id="predictionResultBox" class="hidden bg-darkbg border border-indigo-800/60 rounded-2xl p-5 space-y-3 text-center">
+                    <h3 class="text-sm font-bold text-indigo-400 uppercase">Estimation Results</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-cardbg p-3 rounded-xl">
+                            <span class="text-xs text-gray-400 block">Total Score (/300)</span>
+                            <span class="text-2xl font-extrabold text-emerald-400" id="resTotalMarks">0</span>
+                        </div>
+                        <div class="bg-cardbg p-3 rounded-xl">
+                            <span class="text-xs text-gray-400 block">Estimated Main Percentile</span>
+                            <span class="text-2xl font-extrabold text-indigo-300" id="resPercentile">99.0%</span>
+                        </div>
+                    </div>
+                    <div class="bg-cardbg p-3 rounded-xl">
+                        <span class="text-xs text-gray-400 block">Estimated JEE Advanced Rank Range</span>
+                        <span class="text-xl font-extrabold text-amber-400" id="resAdvRank">Under 5,000</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 6: ADDITIONAL BOOKS -->
         <section id="tab-books" class="tab-content hidden space-y-6 mt-4">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
@@ -226,7 +292,7 @@
             <div id="booksContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
         </section>
 
-        <!-- TAB 5: AI DOUBT SOLVER -->
+        <!-- TAB 7: AI DOUBT SOLVER -->
         <section id="tab-ai" class="tab-content hidden space-y-6 mt-4">
             <div class="glass p-6 rounded-2xl border border-gray-800 space-y-4">
                 <div class="flex justify-between items-center">
@@ -246,7 +312,7 @@
             </div>
         </section>
 
-        <!-- TAB 6: MISTAKES -->
+        <!-- TAB 8: MISTAKES -->
         <section id="tab-mistakes" class="tab-content hidden space-y-6 mt-4">
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-bold">Mistake Log</h2>
@@ -257,7 +323,7 @@
             <div id="mistakesContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
         </section>
 
-        <!-- TAB 7: TODOS (Fixed Bug & Robust State Handling) -->
+        <!-- TAB 9: TODOS -->
         <section id="tab-todos" class="tab-content hidden space-y-6 mt-4">
             <div class="glass p-6 rounded-2xl border border-gray-800 space-y-4">
                 <form id="todoForm" onsubmit="addTodoItem(event)" class="flex gap-3">
@@ -268,7 +334,7 @@
             </div>
         </section>
 
-        <!-- TAB 8: TIMETABLE & TIMER -->
+        <!-- TAB 10: TIMETABLE & TIMER -->
         <section id="tab-timetable" class="tab-content hidden space-y-6 mt-4">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="glass p-6 rounded-2xl border border-gray-800 flex flex-col items-center justify-center text-center space-y-5">
@@ -277,7 +343,6 @@
                         <span id="timerDisplay" class="text-4xl font-extrabold tracking-wider">25:00</span>
                     </div>
 
-                    <!-- Manual Minute Presets & Custom Input -->
                     <div class="w-full space-y-2">
                         <div class="flex justify-center gap-2">
                             <button onclick="setCustomTimer(15)" class="px-2.5 py-1 text-xs rounded-lg bg-gray-800 hover:bg-gray-700">15m</button>
@@ -521,8 +586,8 @@
         let currentUser = null;
         let currentPcmSub = 'Physics';
         let unsubscribeCloud = null;
+        let progressChartInstance = null;
 
-        // Clean Initial State (No Pre-filled Dummy Data)
         function getDefaultEmptyData() {
             return {
                 dailyLogs: {},
@@ -541,7 +606,6 @@
         if (!appData.books) appData.books = [];
         if (!appData.todos) appData.todos = [];
 
-        // Expanded Built-in Offline JEE Formula & Concept Dictionary (50+ Formulas & Concepts)
         const offlineFormulas = [
             { subject: 'Physics', title: 'Kinematics & Projectile Motion', content: 'v = u + at | s = ut + ½at² | v² = u² + 2as | Range R = (u² sin 2θ)/g | Max Height H = (u² sin²θ)/(2g)' },
             { subject: 'Physics', title: 'Newton Laws & Friction', content: 'F_net = dp/dt = ma | f_s(max) = μ_s N | f_k = μ_k N | Banked Road v = √(gr tan θ)' },
@@ -575,7 +639,6 @@
         const todayStr = new Date().toISOString().split('T')[0];
         document.getElementById('logDate').value = todayStr;
 
-        // Robust Cross-Device Real-Time Cloud Sync with Auto-Retry & Merge
         auth.onAuthStateChanged(user => {
             currentUser = user;
             if (unsubscribeCloud) {
@@ -589,14 +652,12 @@
                 document.getElementById('authBtn').innerHTML = '<i class="fa-solid fa-right-from-bracket mr-1.5"></i> Logout';
                 document.getElementById('syncNowBtn').classList.remove('hidden');
 
-                // Real-time listener with error tolerance
                 unsubscribeCloud = db.collection('users').doc(user.uid).onSnapshot(doc => {
                     if (doc.exists) {
                         const cloudData = doc.data();
                         if (!cloudData.books) cloudData.books = [];
                         if (!cloudData.todos) cloudData.todos = [];
                         
-                        // Merge cloud data with local if cloud timestamp is newer or local is empty
                         if ((cloudData.lastUpdated || 0) >= (appData.lastUpdated || 0)) {
                             appData = Object.assign(getDefaultEmptyData(), cloudData);
                             localStorage.setItem('delta_bm_data', JSON.stringify(appData));
@@ -655,7 +716,6 @@
             });
         }
 
-        // Reset All Data Feature
         function resetAllData() {
             if (!confirm('Are you sure you want to reset ALL data? This will clear all your logs, chapters, notes, books, and tasks to a clean state.')) {
                 return;
@@ -687,9 +747,9 @@
                 activeBtn.classList.remove('text-gray-400', 'hover:text-white', 'hover:bg-cardhover');
                 activeBtn.classList.add('bg-accent', 'text-white');
             }
+            if (tabId === 'flashcards') renderFlashcards();
         }
 
-        // Calculator Logic
         function toggleCalculatorModal() {
             const modal = document.getElementById('calculatorModal');
             modal.classList.toggle('hidden');
@@ -715,7 +775,6 @@
             }
         }
 
-        // Dashboard, Manual Logger & Date-wise History
         function loadSelectedDatePreview() {
             const date = document.getElementById('logDate').value;
             const log = appData.dailyLogs[date] || { hours: 0, questions: 0 };
@@ -774,7 +833,6 @@
 
             loadSelectedDatePreview();
 
-            // Heatmap (Clickable for Date-wise access)
             let hm = document.getElementById('heatmapContainer');
             hm.innerHTML = '';
             for (let i = 29; i >= 0; i--) {
@@ -794,7 +852,6 @@
                 hm.appendChild(cell);
             }
 
-            // Date-wise History List (Sorted newest first)
             const historyBox = document.getElementById('dateHistoryContainer');
             const dates = Object.keys(appData.dailyLogs).sort((a, b) => b.localeCompare(a));
             document.getElementById('totalLoggedDaysCount').innerText = `${dates.length} Days Logged`;
@@ -818,9 +875,37 @@
                     historyBox.appendChild(row);
                 });
             }
+
+            // Render Chart.js Progress Breakdown
+            let pSolved = 0, pAi = 0, pUnsolved = 0;
+            appData.topics.forEach(t => {
+                pSolved += t.solved || 0;
+                pAi += t.ai || 0;
+                pUnsolved += t.unsolved || 0;
+            });
+
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            if (progressChartInstance) progressChartInstance.destroy();
+            progressChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Independent Solved', 'AI-Assisted', 'Unsolved'],
+                    datasets: [{
+                        data: [pSolved, pAi, pUnsolved],
+                        backgroundColor: ['#10b981', '#6366f1', '#f43f5e'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#9ca3af', font: { size: 10 } } }
+                    }
+                }
+            });
         }
 
-        // PCM Chapters & 4 Columns
         function switchPcmSub(sub) {
             currentPcmSub = sub;
             document.querySelectorAll('.pcm-sub-btn').forEach(btn => {
@@ -910,7 +995,6 @@
             }
         }
 
-        // Notes Vault + Global Search + Pre-populated Formula Dictionary
         function openVaultModal() { document.getElementById('vaultModal').classList.remove('hidden'); }
         function saveVaultItem(e) {
             e.preventDefault();
@@ -929,7 +1013,6 @@
             const query = (document.getElementById('vaultSearchInput')?.value || '').toLowerCase().trim();
             const subFilter = document.getElementById('vaultFilterSubject')?.value || 'All';
 
-            // 1. Render User's Custom Notes
             let container = document.getElementById('vaultContainer');
             container.innerHTML = '';
             let filteredCustom = appData.vault.filter(item => {
@@ -963,7 +1046,6 @@
                 });
             }
 
-            // 2. Render Built-in Offline JEE Formulas
             let offlineBox = document.getElementById('offlineFormulaContainer');
             offlineBox.innerHTML = '';
             let filteredOffline = offlineFormulas.filter(f => {
@@ -997,7 +1079,62 @@
             renderVault();
         }
 
-        // Additional Books & PDF Management (Firebase Storage + Direct Links)
+        // Flashcards Feature Renderer
+        function renderFlashcards() {
+            const container = document.getElementById('flashcardsContainer');
+            const subFilter = document.getElementById('flashcardSubFilter').value;
+            container.innerHTML = '';
+
+            const filtered = offlineFormulas.filter(f => subFilter === 'All' || f.subject === subFilter);
+
+            filtered.forEach((f, idx) => {
+                const card = document.createElement('div');
+                card.className = 'flip-card h-48 cursor-pointer';
+                card.innerHTML = `
+                    <div class="flip-card-inner relative w-full h-full rounded-2xl shadow-xl" onclick="this.parentElement.classList.toggle('flipped')">
+                        <div class="flip-front glass p-5 rounded-2xl border border-gray-800 flex flex-col justify-between">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-indigo-400 font-semibold">${f.subject}</span>
+                                <span class="text-[10px] bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full">Card #${idx + 1}</span>
+                            </div>
+                            <h4 class="font-bold text-base text-gray-100 text-center">${f.title}</h4>
+                            <p class="text-[11px] text-gray-400 text-center italic">Click to flip & view formula</p>
+                        </div>
+                        <div class="flip-back glass p-5 rounded-2xl border border-indigo-800/60 bg-indigo-950/40 flex flex-col justify-between">
+                            <div class="text-[10px] text-emerald-400 font-semibold uppercase">Formula / Concept Answer</div>
+                            <div class="text-xs text-indigo-200 font-mono text-center overflow-y-auto max-h-24">${f.content}</div>
+                            <p class="text-[10px] text-gray-400 text-center italic">Click to flip back</p>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Rank Predictor Logic
+        function calculateRankPrediction() {
+            const p = parseFloat(document.getElementById('predPhysics').value) || 0;
+            const c = parseFloat(document.getElementById('predChem').value) || 0;
+            const m = parseFloat(document.getElementById('predMath').value) || 0;
+            const total = p + c + m;
+
+            document.getElementById('resTotalMarks').innerText = total + ' / 300';
+            
+            let percentile = 90.0 + (total / 300) * 9.9;
+            if (percentile > 99.99) percentile = 99.99;
+            document.getElementById('resPercentile').innerText = percentile.toFixed(2) + '%';
+
+            let rank = "Above 50,000";
+            if (total > 220) rank = "Under 500 (Top IIT Zone)";
+            else if (total > 180) rank = "Under 2,000 (Top 7 IITs)";
+            else if (total > 140) rank = "Under 5,000 (IIT Seated)";
+            else if (total > 100) rank = "Under 15,000 (NIT / IIIT)";
+            else if (total > 70) rank = "Under 35,000";
+
+            document.getElementById('resAdvRank').innerText = rank;
+            document.getElementById('predictionResultBox').classList.remove('hidden');
+        }
+
         function openBookModal() {
             document.getElementById('bookTitle').value = '';
             document.getElementById('bookPdfFile').value = '';
@@ -1094,7 +1231,6 @@
             renderBooks();
         }
 
-        // AI Doubt Solver Integration (Gemini API)
         async function askGeminiAI() {
             let apiKey = document.getElementById('geminiApiKey').value.trim();
             let prompt = document.getElementById('aiPromptInput').value.trim();
@@ -1136,7 +1272,6 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // Mistakes Log
         function openMistakeModal() { document.getElementById('mistakeModal').classList.remove('hidden'); }
         function saveMistake(e) {
             e.preventDefault();
@@ -1178,7 +1313,6 @@
             renderMistakes();
         }
 
-        // To-Do (Bug Fixed with Robust String/Number ID Matching)
         function addTodoItem(e) {
             e.preventDefault();
             let input = document.getElementById('todoInput');
@@ -1223,7 +1357,6 @@
             renderTodos();
         }
 
-        // Timetable & Timer (With Manual Controls)
         let timerInterval = null;
         let defaultTimerSeconds = 25 * 60;
         let timeLeft = defaultTimerSeconds;
@@ -1298,7 +1431,6 @@
             renderTimetable();
         }
 
-        // Auth Login / Logout / Signup
         function handleAuthButtonClick() {
             if (currentUser) {
                 if (confirm('Do you want to logout from Firebase Cloud Sync?')) {
@@ -1343,12 +1475,10 @@
             renderMistakes();
             renderTodos();
             renderTimetable();
+            renderFlashcards();
         }
 
         renderAll();
     </script>
 </body>
 </html>
-
-
-
